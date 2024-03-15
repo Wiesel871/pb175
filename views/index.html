@@ -1,6 +1,6 @@
 {{ block "index" . }}
 <!DOCTYPE html>
-<html>
+<html id="html">
     <head>
         <title></title>
         <meta charset="UTF-8">
@@ -14,12 +14,21 @@
     </head>
     <body>
         <main class="container">
-            <h1>Hello world!</h1>
+            <h1 align="center">Hello world!</h1>
         </main>
-        <div id="count">
-            {{template "count"}}
+        <div id="count" class="container" align="center">
+            {{ template "count" . }}
         </div>
-        <button hx-post="/count" hx-target="#count">Plus</button>
+        <br>
+        <div class="container" align="center">
+            <button hx-post="/count" hx-target="#count" >Plus</button>
+        </div>
+        <div id="buttons">
+            {{ template "buttons" . }}
+        </div>
+        <div id="themes">
+            {{ template "theme" . }}
+        </div>
     </body>
 </html>
 {{ end }}
@@ -27,3 +36,21 @@
 {{ block "count" . }}
     Count {{ .Count }}
 {{end}}
+
+{{ block "buttons" . }}
+    {{ if .Left }}
+    <button disabled>Right</button>
+    <button hx-post="/buttons" hx-target="#buttons" >Left</button>
+    {{ else }}
+    <button hx-post="/buttons" hx-target="#buttons" >Right</button>
+    <button disabled>Left</button>
+    {{ end }}
+{{ end }}
+
+{{ block "theme" . }}
+    {{ if (eq .Theme "dark") }}
+    <button hx-post="/theme" data-theme="light" hx-target="#themes" width=10%>Light</button>
+    {{ else }}
+    <button hx-post="/theme" data-theme="dark"  hx-target="#themes" width=10%>Dark </button>
+    {{ end }}
+{{ end }}
