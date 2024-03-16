@@ -26,9 +26,14 @@
         <div id="buttons">
             {{ template "buttons" . }}
         </div>
-        <div id="themes">
+        <div id="theme">
             {{ template "theme" . }}
         </div>
+        <br>
+        {{ template "contact_form" . }}
+        <hr>
+        <div id="contacts" style="display: flex; flex-direction: column;">
+        {{ template "contact_range" . }}
     </body>
 </html>
 {{ end }}
@@ -36,21 +41,3 @@
 {{ block "count" . }}
     Count {{ .Count }}
 {{end}}
-
-{{ block "buttons" . }}
-    {{ if .Left }}
-    <button disabled>Right</button>
-    <button hx-post="/buttons" hx-target="#buttons" >Left</button>
-    {{ else }}
-    <button hx-post="/buttons" hx-target="#buttons" >Right</button>
-    <button disabled>Left</button>
-    {{ end }}
-{{ end }}
-
-{{ block "theme" . }}
-    {{ if (eq .Theme "dark") }}
-    <button hx-post="/theme" data-theme="light" hx-target="#themes" width=10%>Light</button>
-    {{ else }}
-    <button hx-post="/theme" data-theme="dark"  hx-target="#themes" width=10%>Dark </button>
-    {{ end }}
-{{ end }}
