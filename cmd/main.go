@@ -137,7 +137,7 @@ func main() {
     mux.HandleFunc("POST /theme", st.SwapTheme)
     mux.HandleFunc("GET /offers", st.indexContacts)
     mux.HandleFunc("POST /offers", st.bodyContacts)
-    mux.HandleFunc("POST /contacts", st.AddContact)
+    mux.HandleFunc("PUT /contacts", st.AddContact)
     srv := &http.Server {
         Addr: ":8090",
         Handler: mux,
