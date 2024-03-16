@@ -24,11 +24,12 @@ func newContact(id uint, name string, email string) (*Contact) {
 }
 
 func insertContact(db *sql.DB, con *Contact) error {
-    _, err := db.Exec(fmt.Sprintf("INSERT OR REPLACE INTO Contacts (id, Name, Email) VALUES (%d, \"%s\", \"%s\")", con.id, con.Name, con.Email))
+    _, err := db.Exec(fmt.Sprintf("INSERT INTO Contacts (id, Name, Email) VALUES (%d, \"%s\", \"%s\")", con.id, con.Name, con.Email))
+    fmt.Printf("con.id: %v\n", con.id)
     return err
 }
 
-func (st *State) getContacts() Contacts {
+func (st *Index) GetContacts() Contacts {
     rows, err := st.DB.Query("SELECT Name, Email FROM Contacts")
     if err != nil {
         fmt.Printf("get err.Error(): %v\n", err.Error())
@@ -43,7 +44,6 @@ func (st *State) getContacts() Contacts {
 	}
 	return contacts
 }
-
 
 
 func initDB() (*sql.DB, error) {

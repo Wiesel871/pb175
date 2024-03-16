@@ -8,7 +8,11 @@ import (
 	"io"
 	"net/http"
     "log"
+    "os"
+    "path/filepath"
+    "strings"
 	//"github.com/a-h/templ"
+
 )
 
 type Templates struct {
@@ -23,13 +27,32 @@ func (t* Templates) Render(w io.Writer, name string, data interface{}) error {
     return err
 }
 
+func ParseTemplates() *template.Template {
+    templ := template.New("")
+    err := filepath.Walk("./views", func(path string, info os.FileInfo, err error) error {
+        if strings.Contains(path, ".html") {
+            _, err = templ.ParseFiles(path)
+            if err != nil {
+                log.Println(err)
+            }
+        }
+        return err
+    })
+
+    if err != nil {
+        panic(err)
+    }
+
+    return templ
+}
+
 func newTemplate() *Templates {
     return &Templates{
-        templates: template.Must(template.ParseGlob("views/*.html")),
+        templates: ParseTemplates(),
     }
 }
 
-type State struct {
+type Index struct {
     Count int
     Server *http.Server
     temp *Templates
@@ -39,21 +62,25 @@ type State struct {
     contacts_size uint
 }
 
-func (st *State) Plus(w http.ResponseWriter, r *http.Request) {
-    st.temp.Render(w, "stount", st)
+func (st *Index) Plus(w http.ResponseWriter, r *http.Request) {
+    st.temp.Render(w, "count", st)
     st.Count++
 }
 
-func (st *State) Index(w http.ResponseWriter, r *http.Request) {
+func (st *Index) Index(w http.ResponseWriter, r *http.Request) {
     st.temp.Render(w, "index", st)
 }
 
-func (st *State) Buttons(w http.ResponseWriter, r *http.Request) {
+func (st *Index) postIndex(w http.ResponseWriter, r *http.Request) {
+    st.temp.Render(w, "index_body", st)
+}
+
+func (st *Index) Buttons(w http.ResponseWriter, r *http.Request) {
     st.Left = !st.Left
     st.temp.Render(w, "buttons", st)
 }
 
-func (st *State) SwapTheme(w http.ResponseWriter, r *http.Request) {
+func (st *Index) SwapTheme(w http.ResponseWriter, r *http.Request) {
     if st.Theme == "dark" {
         st.Theme = "light"
     } else {
@@ -63,17 +90,26 @@ func (st *State) SwapTheme(w http.ResponseWriter, r *http.Request) {
 }
 
 
-func (st *State) AddContact(w http.ResponseWriter, r *http.Request) {
-    if err := insertContact(st.DB, newContact(st.contacts_size + 1, r.FormValue("name"), r.FormValue("email"))); err != nil {
+func (st *Index) AddContact(w http.ResponseWriter, r *http.Request) {
+    if err := insertContact(st.DB, newContact(st.contacts_size + 1, r.FormValue("name"), r.FormValue("email"))); err == nil {
+        st.contacts_size += 1
+    } else {
         fmt.Printf("insert err.Error(): %v on %s %s\n", err.Error(), r.FormValue("name"), r.FormValue("email"))
-        return
     }
-    st.contacts_size++
-    st.temp.Render(w, "contacts", st)
+    st.temp.Render(w, "contact_range", st)
+}
+
+
+func (st *Index) indexContacts(w http.ResponseWriter, r *http.Request) {
+    st.temp.Render(w, "offers", st)
+}
+
+func (st *Index) bodyContacts(w http.ResponseWriter, r *http.Request) {
+    st.temp.Render(w, "offers_body", st)
 }
 
 func main() {
-    st := State { 
+    st := Index { 
         Count: 0,
         temp: newTemplate(),
         Left: true,
@@ -86,30 +122,21 @@ func main() {
     }
     st.DB = db
 
-    var size *sql.Rows
-    if size, err = db.Query("SELECT COUNT(*) FROM Contacts"); err != nil {
-        fmt.Printf("err.Error(): %v\n", err.Error())
-        return 
-    }
-    if !size.Next() {
-        return
-    }
-    if err := size.Scan(&st.contacts_size); err != nil {
+    if err = db.QueryRow("SELECT COUNT(*) FROM Contacts").Scan(&st.contacts_size); err != nil {
         fmt.Printf("err.Error(): %v\n", err.Error())
         return 
     }
     fmt.Printf("st.contacts_size: %v\n", st.contacts_size)
-    if st.contacts_size == 0 {
-        insertContact(st.DB, newContact(0, "Joe", "Mamam"))
-    }
     
-    fmt.Println(st.getContacts())
-
     mux := http.NewServeMux()
     mux.HandleFunc("GET /", st.Index)
+    mux.HandleFunc("POST /", st.postIndex)
+
     mux.HandleFunc("POST /count", st.Plus)
     mux.HandleFunc("POST /buttons", st.Buttons)
     mux.HandleFunc("POST /theme", st.SwapTheme)
+    mux.HandleFunc("GET /offers", st.indexContacts)
+    mux.HandleFunc("POST /offers", st.bodyContacts)
     mux.HandleFunc("POST /contacts", st.AddContact)
     srv := &http.Server {
         Addr: ":8090",

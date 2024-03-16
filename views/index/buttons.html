@@ -1,0 +1,18 @@
+{{ block "buttons" . }}
+    {{ if .Left }}
+    <button disabled>Right</button>
+    <button hx-post="/buttons" hx-target="#buttons" >Left</button>
+    {{ else }}
+    <button hx-post="/buttons" hx-target="#buttons" >Right</button>
+    <button disabled>Left</button>
+    {{ end }}
+{{ end }}
+
+{{ block "theme" . }}
+    {{ if (eq .Theme "dark") }}
+    <button hx-post="/theme" data-theme="light" hx-target="#theme" >Light</button>
+    {{ else }}
+    <button hx-post="/theme" data-theme="dark"  hx-target="#theme" >Dark </button>
+    {{ end }}
+{{ end }}
+
