@@ -7,25 +7,51 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+type dbHandler struct {
+    db *sql.DB
+    Users string
+    Offers string
+}
 
 
 
-func InitDB() (*sql.DB, error) {
+func SmallestMissingID(db *sql.DB, table string) (int, error) {
+    var res int
+    err := db.QueryRow(`
+    SELECT MIN(ID + 1) AS smallest_missing_id
+    FROM your_table t1
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM ` + table + ` t2
+        WHERE t2.ID = t1.ID + 1)
+    `).Scan(&res)
+    if err != nil {
+        return 0, err
+    }
+    return res, nil
+}
+
+func InitDB() (*dbHandler, error) {
+    res := new(dbHandler)
 	var err error
     db, err := sql.Open("sqlite3", "bazos.db")
 	if err != nil {
         fmt.Printf("open err.Error(): %v\n", err.Error())
 		return nil, err
 	}
-    if err = initUsers(db); err != nil {
+    res.db = db
+    var name string
+    if name, err = initUsers(db); err != nil {
         fmt.Printf("init Users err.Error(): %v\n", err.Error())
 		return nil, err
     }
+    res.Users = name
 
-    if err = initOffers(db); err != nil {
+    if name, err = initOffers(db); err != nil {
         fmt.Printf("init Offers err.Error(): %v\n", err.Error())
 		return nil, err
 
     }
-	return db, nil
+    res.Offers = name
+	return res, nil
 }

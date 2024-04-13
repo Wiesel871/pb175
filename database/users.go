@@ -39,8 +39,8 @@ func NewUser(id int, name string, email string, password string) (*User, error) 
     }, nil
 }
 
-func InsertUser(db *sql.DB, con *User) error {
-    _, err := db.Exec(`
+func (dbh *dbHandler) InsertUser(con *User) error {
+    _, err := dbh.db.Exec(`
     INSERT INTO Users (ID, Name, Email, Password) 
     VALUES (?, ?, ?, ?, ?)`, 
     con.ID, con.Name, con.Email, con.Password, false)
@@ -48,8 +48,8 @@ func InsertUser(db *sql.DB, con *User) error {
     return err
 }
 
-func GetUsers(db *sql.DB) Users {
-    rows, err := db.Query("SELECT Name, Email FROM Users")
+func (dbh *dbHandler) GetUsers() Users {
+    rows, err := dbh.db.Query("SELECT Name, Email FROM" + dbh.Users)
     if err != nil {
         fmt.Printf("get err.Error(): %v\n", err.Error())
     }
@@ -64,9 +64,10 @@ func GetUsers(db *sql.DB) Users {
 	return contacts
 }
 
-func initUsers(db *sql.DB) error {
+func initUsers(db *sql.DB) (string, error) {
+    name := "Users"
     _, err := db.Exec(`
-		CREATE TABLE IF NOT EXISTS Users (
+        CREATE TABLE IF NOT EXISTS ` + name +` (
 			ID INTEGER PRIMARY KEY,
 			Name TEXT NOT NULL,
             Email TEXT NOT NULL UNIQUE,
@@ -74,5 +75,5 @@ func initUsers(db *sql.DB) error {
             hasPFP BOOL,
             isAdmin BOOL,
 		)`); 
-    return err
+    return name, err
 }

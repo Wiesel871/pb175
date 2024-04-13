@@ -18,14 +18,15 @@ type Offers = []Offer
 
 
 
-func initOffers(db *sql.DB) error {
+func initOffers(db *sql.DB) (string, error) {
+    name := "Offers"
     _, err := db.Exec(`
-        CREATE TABLE IF NOT EXISTS Offers (
+        CREATE TABLE IF NOT EXISTS ` + name + ` (
             ID INTEGER PRIMARY KEY,
             ID_owner INTEGER,
             Name TEXT NOT NULL,
             Description TEXT,
             FOREIGN KEY (ID_owner) REFERENCES Users(ID)
         )`) 
-    return err
+    return name, err
 }
