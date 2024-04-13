@@ -7,13 +7,11 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type dbHandler struct {
-    db *sql.DB
+type DBHandler struct {
+    DB *sql.DB
     Users string
     Offers string
 }
-
-
 
 func SmallestMissingID(db *sql.DB, table string) (int, error) {
     var res int
@@ -31,15 +29,15 @@ func SmallestMissingID(db *sql.DB, table string) (int, error) {
     return res, nil
 }
 
-func InitDB() (*dbHandler, error) {
-    res := new(dbHandler)
+func InitDB() (*DBHandler, error) {
+    res := new(DBHandler)
 	var err error
     db, err := sql.Open("sqlite3", "bazos.db")
 	if err != nil {
         fmt.Printf("open err.Error(): %v\n", err.Error())
 		return nil, err
 	}
-    res.db = db
+    res.DB = db
     var name string
     if name, err = initUsers(db); err != nil {
         fmt.Printf("init Users err.Error(): %v\n", err.Error())
