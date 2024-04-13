@@ -1,0 +1,34 @@
+package components
+
+import "strconv"
+import data "wiesel/pb175/database"
+
+templ SignupPage(err string) {
+    <form hx-target="#bod" hx-post="/signup" hx-swap="outerHTML">
+        <label for="name">Name</label>
+        <input type="text" name="name" placeholder="Name" required></input>
+
+        <label for="email">Email</label>
+        <input type="email" name="email" placeholder="Email" required></input>
+
+        <label for="psw">Password</label>
+        <input type="password" name="psw" placeholder="Password" required></input>
+        <button type="submit">Submit</button>
+        <div>{ err }</div>
+    </form>
+}
+
+templ SignUp(err string) {
+    @SignupPage(err)
+}
+
+templ Users(users data.Users) {
+    for _, user := range users {
+    <div>
+        ID: <span>{ strconv.Itoa(user.ID) }</span>
+        Name: <span>{ user.Name }</span>
+        Email: <span>{ user.Email }</span>
+    </div>
+
+    }
+}

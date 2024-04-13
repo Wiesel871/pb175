@@ -1,0 +1,30 @@
+package components
+
+templ Header() {
+        <head>
+            <title></title>
+            <meta charset="UTF-8"/>
+            <meta name="viewport" content="width=device-width, initial scale=1"/>
+            <script src="https://unpkg.com/htmx.org@1.9.10"/>
+            <link rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
+            <meta name="color-scheme" content="light dark"/>
+        </head>
+}
+
+templ IndexBody() {
+    <body id="bod">
+    <main class="container">
+        <h1 align="center"></h1>
+    </main>
+    <br/>
+    <button hx-get="/signup" hx-replace-url="true" hx-target="#bod" hx-swap="outerHTML">Sign up</button>
+    </body>
+}
+
+templ Index() {
+    <html>
+    @Header()
+    @IndexBody()
+    </html>
+}
