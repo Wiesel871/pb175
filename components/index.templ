@@ -8,17 +8,23 @@ templ Header() {
             <script src="https://unpkg.com/htmx.org@1.9.10"/>
             <link rel="stylesheet"
             href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
-            <meta name="color-scheme" content="light dark"/>
+            <meta name="color-scheme" content="light"/>
         </head>
 }
 
 templ IndexBody() {
     <body id="bod">
     <main class="container">
-        <h1 align="center"></h1>
+        <h1 align="center">NeUplneBazos.sk</h1>
     </main>
-    <br/>
-    <button hx-get="/signup" hx-replace-url="true" hx-target="#bod" hx-swap="outerHTML">Sign up</button>
+    <div class="grid" align="center">
+        <div> 
+            <button hx-get="/signup" hx-replace-url="true" hx-target="#bod" hx-swap="outerHTML">Sign up</button>
+        </div>
+        <div> 
+            <button hx-get="/login" hx-replace-url="true" hx-target="#bod" hx-swap="outerHTML">Log in</button>
+        </div>
+    </div>
     </body>
 }
 

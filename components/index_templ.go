@@ -23,7 +23,7 @@ func Header() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<head><title></title><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial scale=1\"><script src=\"https://unpkg.com/htmx.org@1.9.10\"></script><link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css\"><meta name=\"color-scheme\" content=\"light dark\"></head>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<head><title></title><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial scale=1\"><script src=\"https://unpkg.com/htmx.org@1.9.10\"></script><link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css\"><meta name=\"color-scheme\" content=\"light\"></head>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -47,7 +47,7 @@ func IndexBody() templ.Component {
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<body id=\"bod\"><main class=\"container\"><h1 align=\"center\"></h1></main><br><button hx-get=\"/signup\" hx-replace-url=\"true\" hx-target=\"#bod\" hx-swap=\"outerHTML\">Sign up</button></body>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<body id=\"bod\"><main class=\"container\"><h1 align=\"center\">NeUplneBazos.sk</h1></main><div class=\"grid\" align=\"center\"><div><button hx-get=\"/signup\" hx-replace-url=\"true\" hx-target=\"#bod\" hx-swap=\"outerHTML\">Sign up</button></div><div><button hx-get=\"/login\" hx-replace-url=\"true\" hx-target=\"#bod\" hx-swap=\"outerHTML\">Log in</button></div></div></body>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
