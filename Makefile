@@ -1,4 +1,4 @@
-SOURCES := $(shell find cmd -type f -name '*.go')
+SOURCES := $(shell templ generate > /dev/null; find cmd -type f -name '*.go')
 
 .PHONY: all clean
 
