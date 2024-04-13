@@ -5,53 +5,65 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-    "database/sql"
-    "os"
-    "os/signal"
-    "syscall"
-    "time"
+	"os"
+	"os/signal"
+	"strconv"
+	"syscall"
+	"time"
+
+	comp "wiesel/pb175/components"
+	data "wiesel/pb175/database"
 
 	"github.com/a-h/templ"
-    comp "wiesel/pb175/components"
-    data "wiesel/pb175/database"
 )
 
 type GlobalState struct {
-    db *sql.DB 
-    db_s int
+    dbh *data.DBHandler
 }
 
+
 func (st *GlobalState) AddUser(w http.ResponseWriter, r *http.Request) {
+    ID, err := data.SmallestMissingID(st.dbh.DB, st.dbh.Users)
+    if err != nil {
+        w.WriteHeader(500)
+        comp.SignUp(err.Error()).Render(r.Context(), w)
+        return
+    }
     name := r.FormValue("name")
     email := r.FormValue("email")
     password := r.FormValue("psw")
-    println(name + email + password)
+    println(strconv.Itoa(ID) + name + email + password)
 
-    user, err := data.NewUser(st.db_s + 1, name, email, password)
+    user, err := data.NewUser(ID, name, email, password)
     if err != nil {
         w.WriteHeader(500)
         comp.SignUp(err.Error()).Render(r.Context(), w)
         return
     }
-    err = data.InsertUser(st.db, user)
+    err = st.dbh.InsertUser(user)
     if err != nil {
         w.WriteHeader(500)
         comp.SignUp(err.Error()).Render(r.Context(), w)
         return
     }
 
-    comp.Users(data.GetUsers(st.db)).Render(r.Context(), w)
-
+    users, err := st.dbh.GetUsers()
+    if err != nil {
+        w.WriteHeader(500)
+        comp.SignUp(err.Error()).Render(r.Context(), w)
+        return
+    }
+    comp.Users(users).Render(r.Context(), w)
 }
 
 func main() {
-    db, error := data.InitDB()
-    if error != nil {
+    dbh, err := data.InitDB()
+    if err != nil {
         return
     }
 
     st := GlobalState {
-        db: db,
+        dbh: dbh,
     }
 
     mux := http.NewServeMux()
@@ -59,7 +71,7 @@ func main() {
     mux.Handle("GET /signup", templ.Handler(comp.SignUp("")))
     mux.HandleFunc("POST /signup", st.AddUser)
     srv := &http.Server {
-        Addr: ":9080",
+        Addr: ":8080",
         Handler: mux,
         ErrorLog: log.Default(),
     }
