@@ -16,12 +16,12 @@ type DBHandler struct {
 func SmallestMissingID(db *sql.DB, table string) (int, error) {
     var res int
     err := db.QueryRow(`
-    SELECT MIN(ID + 1) AS smallest_missing_id
-    FROM your_table t1
+    SELECT MIN(ID) + 1 
+    FROM ` + table + ` t1
     WHERE NOT EXISTS (
-        SELECT 1
-        FROM ` + table + ` t2
-        WHERE t2.ID = t1.ID + 1)
+        SELECT 1 FROM ` + table + ` t2
+        WHERE ID = t1.ID + 1
+    )
     `).Scan(&res)
     if err != nil {
         return 0, err

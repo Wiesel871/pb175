@@ -13,12 +13,12 @@ type User struct {
     Name string
     Email string
     Password []byte
-    hasPFP bool
-    isAdmin bool
+    Details string
+    HasPFP bool
+    IsAdmin bool
 }
 
 type Users = []User
-
 
 
 /* Hashes given password */
@@ -47,9 +47,9 @@ func NewUser(id int, name string, email string, password string) (*User, error) 
 
 func (dbh *DBHandler) InsertUser(con *User) error {
     _, err := dbh.DB.Exec(`
-    INSERT INTO Users (ID, Name, Email, Password, hasPFP, isAdmin) 
-    VALUES (?, ?, ?, ?, ?, ?)`, 
-    con.ID, con.Name, con.Email, con.Password, false, false)
+    INSERT INTO Users (ID, Name, Email, Password, Details, HasPFP, IsAdmin) 
+    VALUES (?, ?, ?, ?, ?, ?, ?)`, 
+    con.ID, con.Name, con.Email, con.Password, "<empty>", false, false)
     fmt.Printf("con.id: %v\n", con.ID)
     return err
 }
@@ -57,7 +57,16 @@ func (dbh *DBHandler) InsertUser(con *User) error {
 func (dbh *DBHandler) GetUserById(id int) (*User, error) {
     row := dbh.DB.QueryRow("SELECT * FROM " + dbh.Users + " WHERE ID = ?", id)
     var u = new(User)
-    if err := row.Scan(&u.ID, &u.Name, &u.Email, &u.Password, &u.hasPFP, &u.isAdmin); err != nil {
+    if err := row.Scan(&u.ID, &u.Name, &u.Email, &u.Password, &u.Details, &u.HasPFP, &u.IsAdmin); err != nil {
+        return nil, err
+    }
+    return u, nil
+}
+
+func (dbh *DBHandler) GetUserByEmail(email string) (*User, error) {
+    row := dbh.DB.QueryRow("SELECT * FROM " + dbh.Users + " WHERE Email = ?", email)
+    var u = new(User)
+    if err := row.Scan(&u.ID, &u.Name, &u.Email, &u.Password, &u.Details, &u.HasPFP, &u.IsAdmin); err != nil {
         return nil, err
     }
     return u, nil
@@ -74,7 +83,7 @@ func (dbh *DBHandler) GetUsers() (Users, error) {
 	var users Users
 	for rows.Next() {
 		var user User
-        if err := rows.Scan(&user.ID, &user.Name, &user.Email, user.Password, &user.hasPFP, &user.isAdmin); err != nil {
+        if err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Details, &user.HasPFP, &user.IsAdmin); err != nil {
             return nil, err
         }
 		users = append(users, user)
@@ -90,8 +99,15 @@ func initUsers(db *sql.DB) (string, error) {
 			Name TEXT NOT NULL,
             Email TEXT NOT NULL UNIQUE,
             Password BLOB NOT NULL,
-            hasPFP BOOL,
-            isAdmin BOOL,
+            Details TEXT NOT NULL,
+            HasPFP BOOL NOT NULL,
+            IsAdmin BOOL NOT NULL
 		)`); 
+    pass, _ := HashPassword("Foch258147")
+    _, _ = db.Exec(`
+    INSERT OR REPLACE INTO Users (ID, Name, Email, Password, Details, HasPFP, IsAdmin) 
+    VALUES (0, "Filip", "filpavlovic@gmail.com", ?, "Him", false, true)`,
+    pass)
+
     return name, err
 }
