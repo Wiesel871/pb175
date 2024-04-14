@@ -1,0 +1,133 @@
+package components
+
+import "strconv"
+import data "wiesel/pb175/database"
+
+templ SignUpForm(err string) {
+    <div class="grid">
+    <div class="container"/>
+    <div class="container">
+    <form hx-target="#bod" hx-post="/signup" hx-replace-url="true" hx-swap="outerHTML" hx-push-url="true" >
+        <label for="name">Name</label>
+        <input type="text" name="name" placeholder="Name" required></input>
+
+        <label for="email">Email</label>
+        <input type="email" name="email" placeholder="Email" required></input>
+
+        <label for="psw">Password</label>
+        <input type="password" name="psw" placeholder="Password" required></input>
+        <button type="submit">Submit</button>
+        <div>{ err }</div>
+    </form>
+    </div>
+    <div class="container"/>
+    </div>
+}
+
+templ SignUp() {
+    <html>
+    @Header()
+    <body id="#bod">
+    @SignUpForm("")
+    </body>
+    </html>
+}
+
+
+templ LogInForm(err string) {
+    <div class="grid">
+    <div class="container"/>
+    <div class="container">
+    <form hx-target="#bod" hx-post="/login" hx-replace-url="true" hx-swap="outerHTML">
+        <label for="email">Email</label>
+        <input type="email" name="email" placeholder="Email" aria-label="Email" autocomplete="email" required></input>
+
+        <label for="psw">Password</label>
+        <input type="password" name="psw" placeholder="Password" required></input>
+        <button type="submit">Submit</button>
+        <div>{ err }</div>
+    </form>
+    </div>
+    <div class="container"/>
+    </div>
+}
+
+templ LogIn() {
+    <html>
+    @Header()
+    <body id="#bod">
+    @LogInForm("")
+    </body>
+    </html>
+}
+
+templ Profile(user *data.User) {
+    <div class="grid">
+        <div class="container">
+        if !user.HasPFP {
+            <img src="/images/base_pfp.jpg" width="512" height="512"></img>
+        } else {
+            <img src={ "/images/" + strconv.Itoa(user.ID) + "/pfp.jpg" } width="512" height="512"></img>
+        }
+        </div>
+        <div class="container">
+            <div><h1>{user.Name}</h1></div>
+            <div>{ user.Details }</div>
+        </div>
+        <div class="container">
+            <div class="container" align="right">
+            <button hx-target="#bod" hx-get="/home">Home</button>
+            </div>
+            <br/>
+
+            <div class="container" align="right">
+            <button hx-target="#bod" hx-get={"/profile/" + strconv.Itoa(user.ID) + "/offers"}>Offers</button>
+            </div>
+            <br/>
+
+            <div class="container" align="right">
+            <button hx-target="#bod" hx-delete={"/profile/" + strconv.Itoa(user.ID) + "/offers"}>Delete</button>
+            </div>
+            if user.IsAdmin {
+                <br/>
+                <div class="container" align="right">
+                <button hx-target="#bod" hx-get="/users">Users</button>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+templ UserPage(user *data.User) {
+    <html>
+    @Header()
+    <body id="#bod">
+    @Profile(user)
+    </body>
+    </html>
+}
+
+templ Users(users data.Users) {
+    for _, user := range users {
+        <div class="grid">
+            <div>
+            ID: <span>{ strconv.Itoa(user.ID) }</span>
+            Name: <span>{ user.Name }</span>
+            Email: <span>{ user.Email }</span>
+            </div>
+            <div>
+            <button hx-delete={"/profile/" + strconv.Itoa(user.ID)}>U+FE0F</button>
+            </div>
+        </div>
+        <br/>
+    }
+}
+
+templ AllUsers(users data.Users) {
+    <html>
+    @Header()
+    <body id="#bod">
+    @Users(users)
+    </body>
+    </html>
+}
