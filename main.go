@@ -7,54 +7,17 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 
-	comp "wiesel/pb175/components"
+	_ "wiesel/pb175/components"
 	data "wiesel/pb175/database"
+	cmd "wiesel/pb175/cmd"
 
-	"github.com/a-h/templ"
+
+	_ "github.com/a-h/templ"
+
 )
-
-type GlobalState struct {
-    dbh *data.DBHandler
-}
-
-
-func (st *GlobalState) AddUser(w http.ResponseWriter, r *http.Request) {
-    ID, err := data.SmallestMissingID(st.dbh.DB, st.dbh.Users)
-    if err != nil {
-        w.WriteHeader(500)
-        comp.SignUp(err.Error()).Render(r.Context(), w)
-        return
-    }
-    name := r.FormValue("name")
-    email := r.FormValue("email")
-    password := r.FormValue("psw")
-    println(strconv.Itoa(ID) + name + email + password)
-
-    user, err := data.NewUser(ID, name, email, password)
-    if err != nil {
-        w.WriteHeader(500)
-        comp.SignUp(err.Error()).Render(r.Context(), w)
-        return
-    }
-    err = st.dbh.InsertUser(user)
-    if err != nil {
-        w.WriteHeader(500)
-        comp.SignUp(err.Error()).Render(r.Context(), w)
-        return
-    }
-
-    users, err := st.dbh.GetUsers()
-    if err != nil {
-        w.WriteHeader(500)
-        comp.SignUp(err.Error()).Render(r.Context(), w)
-        return
-    }
-    comp.Users(users).Render(r.Context(), w)
-}
 
 func main() {
     dbh, err := data.InitDB()
@@ -62,18 +25,24 @@ func main() {
         return
     }
 
-    st := GlobalState {
-        dbh: dbh,
+    st := cmd.GlobalState {
+        DBH: dbh,
     }
 
     mux := http.NewServeMux()
-    mux.Handle("GET /", templ.Handler(comp.Index()))
-    mux.Handle("GET /signup", templ.Handler(comp.SignUp("")))
-    mux.HandleFunc("POST /signup", st.AddUser)
+    cmd.SetupUserHandler(mux, &st)
     srv := &http.Server {
-        Addr: ":8080",
+        Addr: ":8090",
         Handler: mux,
         ErrorLog: log.Default(),
+    }
+    users, err := st.DBH.GetUsers()
+    if err != nil {
+        fmt.Printf("get users: %v\n", err)
+        return
+    }
+    for i := range len(users) {
+        fmt.Printf("user: %v\n", users[i])
     }
 
 
