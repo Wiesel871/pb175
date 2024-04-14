@@ -23,3 +23,6 @@ go.work
 
 # Go files generated from templ
 *_templ.go
+
+# tmp directories
+*tmp*
