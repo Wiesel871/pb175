@@ -1,9 +1,8 @@
-SOURCES := $(shell templ generate > /dev/null; find cmd -type f -name '*.go')
-
 .PHONY: all clean
 
 all: $(SOURCES)
-	go build -o ./tmp/main $(SOURCES)
+	templ generate
+	go build -o ./tmp/main
 
 clean:
 	rm tmp/main
