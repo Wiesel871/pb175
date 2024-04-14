@@ -29,48 +29,44 @@ func (st *GlobalState) AddUser(w http.ResponseWriter, r *http.Request) {
 
     user, err := data.NewUser(ID, name, email, password)
     if err != nil {
-        w.WriteHeader(http.StatusInternalServerError)
+        w.WriteHeader(422)
         fmt.Printf("err: %v\n", err)
         comp.SignUpForm(err.Error()).Render(r.Context(), w)
         return
     }
     err = st.DBH.InsertUser(user)
     if err != nil {
-        w.WriteHeader(http.StatusInternalServerError)
+        w.WriteHeader(422)
         fmt.Printf("err: %v\n", err)
         comp.SignUpForm(err.Error()).Render(r.Context(), w)
         return
     }
 
-    fmt.Printf("login user: %v\n", user)
-    fmt.Printf("This resource has been moved permanently to /profile/" + strconv.Itoa(user.ID))
-    http.Redirect(w, r, "/profile/" + strconv.Itoa(user.ID), http.StatusMovedPermanently)
+    http.SetCookie(w, NewSession(user.ID))
+    http.Redirect(w, r, "/profile/" + strconv.Itoa(user.ID), http.StatusFound)
 }
 
 func (st *GlobalState) Login(w http.ResponseWriter, r *http.Request) {
     email := r.FormValue("email")
-    //password := r.FormValue("psw")
+    password := r.FormValue("psw")
     user, err := st.DBH.GetUserByEmail(email)
     if err != nil {
-        w.WriteHeader(http.StatusNotFound)
+        w.WriteHeader(422)
         fmt.Printf("err: %v\n", err)
         comp.SignUpForm(err.Error()).Render(r.Context(), w)
         return
     }
-    /*
-    pswHash, err := data.HashPassword(password)
-    if pswHash != user.Password {
-        w.WriteHeader(400)
-        comp.SignUp(err.Error()).Render(r.Context(), w)
+    if err = data.CheckPasswordHash(password, user.Password); err != nil {
+        w.WriteHeader(422)
+        comp.SignUpForm("Incorrect password").Render(r.Context(), w)
+        fmt.Printf("passw: err: %v\n", err)
         return
     }
-    */
 
     fmt.Printf("login user: %v\n", user)
-    fmt.Printf("This resource has been moved permanently to /profile/" + strconv.Itoa(user.ID))
-    http.Redirect(w, r, "/profile/" + strconv.Itoa(user.ID), http.StatusMovedPermanently)
+    http.SetCookie(w, NewSession(user.ID))
+    http.Redirect(w, r, "/profile/" + strconv.Itoa(user.ID), http.StatusFound)
 }
-
 
 func (st *GlobalState) Profile(w http.ResponseWriter, r *http.Request) {
     id, err := strconv.Atoi(r.PathValue("id"))
@@ -85,7 +81,11 @@ func (st *GlobalState) Profile(w http.ResponseWriter, r *http.Request) {
         //comp.PageNotFound().Render(r.Context(), w)
         return
     }
-    comp.UserPage(user).Render(r.Context(), w)
+    loged, own := LogedInOwned(r, user)
+    if loged > -1 {
+        http.SetCookie(w, NewSession(loged))
+    }
+    comp.UserPage(user, own).Render(r.Context(), w)
 }
 
 func (st *GlobalState) GetAllUsers(w http.ResponseWriter, r *http.Request) {
@@ -93,5 +93,7 @@ func (st *GlobalState) GetAllUsers(w http.ResponseWriter, r *http.Request) {
     if err != nil {
 
     }
-    comp.Users(users).Render(r.Context(), w)
+    id, _ := LogedInOwned(r, nil)
+    http.SetCookie(w, NewSession(id))
+    comp.Users(users, id).Render(r.Context(), w)
 }
