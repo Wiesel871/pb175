@@ -9,7 +9,33 @@ templ Header() {
             <link rel="stylesheet"
             href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
             <meta name="color-scheme" content="light"/>
+//            <meta name="htmx-config" content='{"defaultSwapStyle":"outerHTML"}'/>
         </head>
+}
+
+templ AllowError() {
+    <script>
+        document.addEventListener("DOMContentLoaded", (event) => {
+            document.body.addEventListener('htmx:beforeSwap', function(evt) {
+                if (evt.detail.xhr.status === 422) {
+                    evt.detail.shouldSwap = true;
+                    evt.detail.isError = false;
+                }
+            });
+        })
+    </script>
+
+}
+
+templ LoginSignupButtons() {
+    <div class="grid" align="center">
+        <div> 
+            <button hx-get="/signup" hx-replace-url="true" hx-target="#bod" >Sign up</button>
+        </div>
+        <div> 
+            <button hx-get="/login" hx-replace-url="true" hx-target="#bod" >Log in</button>
+        </div>
+    </div>
 }
 
 templ IndexBody() {
@@ -17,14 +43,7 @@ templ IndexBody() {
     <main class="container">
         <h1 align="center">NeUplneBazos.sk</h1>
     </main>
-    <div class="grid" align="center">
-        <div> 
-            <button hx-get="/signup" hx-replace-url="true" hx-target="#bod" hx-swap="outerHTML">Sign up</button>
-        </div>
-        <div> 
-            <button hx-get="/login" hx-replace-url="true" hx-target="#bod" hx-swap="outerHTML">Log in</button>
-        </div>
-    </div>
+    @LoginSignupButtons()
     </body>
 }
 
