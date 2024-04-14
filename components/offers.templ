@@ -1,0 +1,62 @@
+package components
+
+import "strconv"
+import data "wiesel/pb175/database"
+
+templ Offers(offers data.Offers, own bool, id int) {
+    <div class="grid">
+        <div>
+        if own && len(offers) < 10 {
+            <button hx-get={"/profile/" + strconv.Itoa(id) + "/add_offer"} hx-target="#bod" hx-replace-url="true">Add offer</button>
+        } else {
+
+        }
+        </div>
+        <div>
+            @ProfileOrLogin(id)
+        </div>
+    </div>
+    <br/>
+    for _, offer := range offers {
+        <div class="grid">
+        <div hx-get={"/profile/" + strconv.Itoa(offer.ID_owner) +  "/offers/" + strconv.Itoa(offer.ID)} hx-trigger="click" hx-target="#bod" hx-replace-url="true">
+            <img src={"images/" + strconv.Itoa(offer.ID_owner) + "/" + strconv.Itoa(offer.ID) + ".jpg" }/>
+            ID: <span>{ strconv.Itoa(offer.ID) }</span>
+            Name: <span>{ offer.Name }</span>
+        </div>
+        if own {
+            <div>
+            <button hx-delete={"/profile/" + strconv.Itoa(offer.ID_owner) +  "/offers/" + strconv.Itoa(offer.ID)} hx-replace-url="true">U+FE0F</button>
+            </div>
+        }
+        </div>
+        <br/>
+    }
+}
+
+templ Offer(offer *data.Offer, own bool, id int) {
+    <div class="grid">
+        <div>
+        <img src={"images/" + strconv.Itoa(offer.ID_owner) + "/" + strconv.Itoa(offer.ID) + ".jpg" }/>
+        </div>
+
+        <div class="container">
+            <div><h1>{offer.Name}</h1></div>
+            <div>{ offer.Description }</div>
+        </div>
+        <div/>
+        <div class="container">
+            @ProfileOrLogin(id)
+        </div>
+    </div>
+}
+
+templ OffersPage(offers data.Offers, own bool, id int) {
+    <html>
+    @Header()
+    <body id="bod">
+    @AllowError()
+    @Offers(offers, own, id)
+    </body>
+    </html>
+}
