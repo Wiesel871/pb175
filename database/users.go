@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 
-    "golang.org/x/crypto/bcrypt"
 	_ "github.com/mattn/go-sqlite3"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
@@ -28,6 +28,10 @@ func HashPassword(password string) ([]byte, error) {
 		return nil, err
 	}
 	return hashedPassword, nil
+}
+
+func CheckPasswordHash(password string, hash []byte) error {
+    return bcrypt.CompareHashAndPassword(hash, []byte(password))
 }
 
 

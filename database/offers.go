@@ -12,7 +12,6 @@ type Offer struct {
     ID_owner int
     Name string
     Description string
-    HasPhoto bool
 }
 
 
@@ -24,21 +23,20 @@ func NewOffer(id, id_owner int, name, desc string) (*Offer) {
         ID_owner: id_owner,
         Name: name,
         Description: desc,
-        HasPhoto: false,
     }
 }
 
 func (dbh *DBHandler) InsertOffer(of *Offer) error {
     _, err := dbh.DB.Exec(`
     INSERT INTO Offers (ID, ID_owner, Name, Description) 
-    VALUES (?, ?, ?, ?, ?)`, 
-    of.ID, of.ID_owner, of.Name, of.Description, of.HasPhoto)
+    VALUES (?, ?, ?, ?)`, 
+    of.ID, of.ID_owner, of.Name, of.Description)
     fmt.Printf("of.id: %v\n", of.ID)
     return err
 }
 
 func (dbh *DBHandler) GetOffers() (Offers, error) {
-    rows, err := dbh.DB.Query("SELECT (*) FROM" + dbh.Offers)
+    rows, err := dbh.DB.Query("SELECT * FROM " + dbh.Offers)
     if err != nil {
         fmt.Printf("get err.Error(): %v\n", err.Error())
         return nil, err
@@ -48,7 +46,8 @@ func (dbh *DBHandler) GetOffers() (Offers, error) {
 	var offers Offers
 	for rows.Next() {
 		var offer Offer
-		rows.Scan(&offer.ID, &offer.ID_owner, &offer.Name, &offer.Description, &offer.HasPhoto)
+        err := rows.Scan(&offer.ID, &offer.ID_owner, &offer.Name, &offer.Description)
+        fmt.Printf("err: %v\n", err)
 		offers = append(offers, offer)
 	}
 	return offers, nil
@@ -72,9 +71,9 @@ func (dbh *DBHandler) GetOffersByOwner(id int) (Offers, error) {
 }
 
 func (dbh *DBHandler) GetOfferById(id int) (*Offer, error) {
-    row := dbh.DB.QueryRow("SELECT * FROM " + dbh.Users + " WHERE ID = ?", id)
+    row := dbh.DB.QueryRow("SELECT * FROM " + dbh.Offers + " WHERE ID = ?", id)
     var offer = new(Offer)
-    if err := row.Scan(&offer.ID, &offer.ID_owner, &offer.Name, &offer.Description, &offer.HasPhoto); err != nil {
+    if err := row.Scan(&offer.ID, &offer.ID_owner, &offer.Name, &offer.Description); err != nil {
         return nil, err
     }
     return offer, nil
@@ -89,8 +88,21 @@ func initOffers(db *sql.DB) (string, error) {
             ID_owner INTEGER,
             Name TEXT NOT NULL,
             Description TEXT,
-            HasPhoto BOOL,
             FOREIGN KEY (ID_owner) REFERENCES Users(ID)
         )`) 
+    _, err = db.Exec(`
+    INSERT OR REPLACE INTO ` + name + ` (ID, ID_owner, Name, Description) 
+    VALUES (0, 0, "test1", "idk")`)
+    if err != nil {
+        println(err.Error()) 
+    }
+    
+    _, err = db.Exec(`
+    INSERT OR REPLACE INTO ` + name + ` (ID, ID_owner, Name, Description) 
+    VALUES (1, 0, "test2", "idk")`)
+    if err != nil {
+        println(err.Error()) 
+    }
+
     return name, err
 }
