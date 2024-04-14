@@ -41,8 +41,18 @@ func main() {
         fmt.Printf("get users: %v\n", err)
         return
     }
+    fmt.Printf("%s:\n", dbh.Users)
     for i := range len(users) {
         fmt.Printf("user: %v\n", users[i])
+    }
+    offers, err := st.DBH.GetOffers()
+    if err != nil {
+        fmt.Printf("get offers: %v\n", err)
+        return
+    }
+    fmt.Printf("%s:\n", dbh.Offers)
+    for i := range len(offers) {
+        fmt.Printf("offer: %v\n", offers[i])
     }
 
 
