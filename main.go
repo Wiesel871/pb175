@@ -25,8 +25,17 @@ func main() {
         return
     }
 
+    anonym := data.User{
+        ID: -1,
+        Name: "",
+        Email: "",
+        Password: []byte(""),
+        IsAdmin: false,
+        HasPFP: false,
+    }
     st := cmd.GlobalState {
         DBH: dbh,
+        Anonym: &anonym,
     }
 
     mux := http.NewServeMux()
