@@ -3,14 +3,6 @@ package components
 import "strconv"
 import data "wiesel/pb175/database"
 
-templ ProfileOrLogin(id int) {
-    if id > -1 {
-        <button hx-get={"/profile/" + strconv.Itoa(id)} hx-target="#bod" hx-replace-url="true">Profile</button>
-    } else {
-        @LoginSignupButtons()
-    }
-}
-
 templ SignUpForm(err string) {
     <div class="grid">
     <div class="container"/>
@@ -32,16 +24,6 @@ templ SignUpForm(err string) {
     </div>
 }
 
-templ SignUp() {
-    <html>
-    @Header()
-    <body id="#bod">
-    @SignUpForm("")
-    </body>
-    </html>
-}
-
-
 templ LogInForm(err string) {
     <div class="grid">
     <div class="container"/>
@@ -60,80 +42,35 @@ templ LogInForm(err string) {
     </div>
 }
 
-templ LogIn() {
-    <html>
-    @Header()
-    <body id="bod">
-    @AllowError()
-    @LogInForm("")
-    </body>
-    </html>
-}
-
-templ Profile(user *data.User, own bool) {
+templ Profile(target *data.User, client *data.User) {
     <div class="grid">
         <div class="container">
-        if !user.HasPFP {
+        if !target.HasPFP {
             <img src="/images/base_pfp.jpg" width="512" height="512"></img>
         } else {
-            <img src={ "/images/" + strconv.Itoa(user.ID) + "/pfp.jpg" } width="512" height="512"></img>
+            <img src={ "/images/" + strconv.Itoa(target.ID) + "/pfp.jpg" } width="512" height="512"></img>
         }
         </div>
         <div class="container">
-            <div><h1>{user.Name}</h1></div>
-            <div>{ user.Details }</div>
+            <div><h1><u>{target.Name}</u></h1></div>
+            <hr/>
+            <div>{ target.Details }</div>
         </div>
         <div class="container">
-            <div class="container" align="right">
-            <button hx-target="#bod" hx-post="/logout" hx-replace-url="true">Log out</button>
+            <div align="right">
+            <a href="#" hx-target="#bod" hx-get={"/profile/" + strconv.Itoa(target.ID) + "/offers"} hx-replace-url="true">Moje Ponuky</a>
             </div>
-            <br/>
-
-            <div class="container" align="right">
-            <button hx-target="#bod" hx-get="/home" hx-replace-url="true">Home</button>
-            </div>
-            <br/>
-
-            <div class="container" align="right">
-            <button hx-target="#bod" hx-get={"/profile/" + strconv.Itoa(user.ID) + "/offers"} hx-replace-url="true">Offers</button>
-            </div>
-            if own {
+            if client != nil && (client.ID == target.ID || client.IsAdmin) {
                 <br/>
-
-                <div class="container" align="right">
-                <button hx-target="#bod" hx-delete={"/profile/" + strconv.Itoa(user.ID)} hx-replace-url="true">Delete</button>
+                <div align="right">
+                <a href="#" hx-target="#bod" hx-delete={"/profile/" + strconv.Itoa(target.ID)} hx-replace-url="true">Terminuj</a>
                 </div>
-                if user.IsAdmin {
-                    <br/>
-                    <div class="container" align="right">
-                    <button hx-target="#bod" hx-get="/users" hx-replace-url="true">Users</button>
-                    </div>
-                }
             }
         </div>
     </div>
 }
 
-templ UserPage(user *data.User, own bool) {
-    <html>
-    @Header()
-    <body id="bod">
-    @AllowError()
-    @Profile(user, own)
-    </body>
-    </html>
-}
-
-templ Users(users data.Users, id int) {
-    <div class="grid">
-        <div>
-        </div>
-
-        <div>
-        <button hx-get={"/profile/" + strconv.Itoa(id)} hx-target="#bod" hx-replace-url="true">Profile</button>
-        </div>
-    </div>
-    <br/>
+templ Users(users data.Users, client *data.User) {
     for _, user := range users {
         <div class="grid">
             <div hx-trigger="click" hx-get={"/profile/" + strconv.Itoa(user.ID)} hx-target="#bod" hx-replace-url="true">
@@ -142,18 +79,9 @@ templ Users(users data.Users, id int) {
             Email: <span>{ user.Email }</span>
             </div>
             <div>
-                <button hx-delete={"/profile/" + strconv.Itoa(user.ID)}>U+FE0F</button>
+                <button hx-delete={"/profile/" + strconv.Itoa(user.ID)}>🗑</button>
             </div>
         </div>
         <br/>
     }
-}
-
-templ AllUsers(users data.Users, id int) {
-    <html>
-    @Header()
-    <body id="bod">
-    @Users(users, id)
-    </body>
-    </html>
 }

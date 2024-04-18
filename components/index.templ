@@ -1,5 +1,15 @@
 package components
 
+import "strconv"
+import data "wiesel/pb175/database"
+
+const (
+    HomeN = 0;
+    OffersN = 1;
+    ProfileP = 2;
+    All = 3;
+)
+
 templ Header() {
         <head>
             <title></title>
@@ -7,7 +17,7 @@ templ Header() {
             <meta name="viewport" content="width=device-width, initial scale=1"/>
             <script src="https://unpkg.com/htmx.org@1.9.10"/>
             <link rel="stylesheet"
-            href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
+            href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.slate.min.css"/>
             <meta name="color-scheme" content="light"/>
 //            <meta name="htmx-config" content='{"defaultSwapStyle":"outerHTML"}'/>
         </head>
@@ -17,7 +27,7 @@ templ AllowError() {
     <script>
         document.addEventListener("DOMContentLoaded", (event) => {
             document.body.addEventListener('htmx:beforeSwap', function(evt) {
-                if (evt.detail.xhr.status === 422) {
+                if (evt.detail.xhr.status >= 400 && evt.detail.xhr.status < 500) {
                     evt.detail.shouldSwap = true;
                     evt.detail.isError = false;
                 }
@@ -27,29 +37,62 @@ templ AllowError() {
 
 }
 
-templ LoginSignupButtons() {
-    <div class="grid" align="center">
-        <div> 
-            <button hx-get="/signup" hx-replace-url="true" hx-target="#bod" >Sign up</button>
-        </div>
-        <div> 
-            <button hx-get="/login" hx-replace-url="true" hx-target="#bod" >Log in</button>
-        </div>
-    </div>
+templ NavBar(client *data.User, page int) {
+    <nav>
+        <ul>
+            <li><strong>NeUplneBazos</strong></li>
+        </ul>
+        <ul>
+            if page != HomeN {
+                <li><a href="#" hx-get="/home" hx-target="#bod">Domov</a></li>
+            }
+            if page != OffersN {
+                <li><a href="#" hx-get="/offers" hx-target="#bod">Ponuky</a></li>
+            }
+            if page != ProfileP {
+                if client.ID > -1 {
+                    <li><a href="#" hx-get={"/profile/" + strconv.Itoa(client.ID) } hx-target="#bod">Profil</a></li>
+                } else {
+                    <li><a href="#" hx-replace-url="true" hx-put="/login" hx-target="#bod">LogIn</a></li>
+                    <li><a href="#" hx-replace-url="true" hx-put="/signup" hx-target="#bod">SignUp</a></li>
+                }
+            }
+            if client.IsAdmin {
+                <li><a hx-target="#bod" hx-get="/users" hx-replace-url="true">Uzivatelia</a></li>
+            }
+            if client.ID > -1 {
+                <li><a href="#" hx-target="#bod" hx-post="/logout" hx-replace-url="true">Odhlasit</a></li>
+            }
+        </ul>
+    </nav>
+}
+
+templ Page(t templ.Component, client *data.User, page int) {
+    <html>
+    @Header()
+    <body id="bod">
+        @NavBar(client, page)
+        @t
+    </body>
+    @AllowError()
+    </html>
 }
 
 templ IndexBody() {
-    <body id="bod">
     <main class="container">
         <h1 align="center">NeUplneBazos.sk</h1>
     </main>
-    @LoginSignupButtons()
-    </body>
+    <div>
+    Tato stranka bola vytvorena ako sucast projektu na predbmet pb175
+    </div>
+    @AllowError()
 }
 
-templ Index() {
-    <html>
-    @Header()
-    @IndexBody()
-    </html>
+
+templ NotFound() {
+    <h1><b>Error 404: Page not found</b></h1>
+}
+
+templ Forbidden() {
+    <h1><b>Error 403: Page not found</b></h1>
 }
