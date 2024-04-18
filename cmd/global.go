@@ -1,17 +1,20 @@
 package handlers
 
 import (
-    "net/http"
-	"github.com/a-h/templ"
-    "time"
-    "strconv"
-    "fmt"
-    data "wiesel/pb175/database"
-    comp "wiesel/pb175/components"
+	"fmt"
+	_ "fmt"
+	"net/http"
+	"strconv"
+	"time"
+	comp "wiesel/pb175/components"
+	data "wiesel/pb175/database"
+
+	_"github.com/a-h/templ"
 )
 
 type GlobalState struct {
     DBH *data.DBHandler
+    Anonym *data.User
 }
 
 const (
@@ -32,39 +35,80 @@ func NewSession(id int) *http.Cookie {
     }
 }
 
-func LogedInOwned(r *http.Request, u *data.User) (int, bool) {
+func GetClientID(r *http.Request) int {
     cookie, err := r.Cookie(session)
-    if err == nil {
-        id, err := strconv.Atoi(cookie.Value)
-        fmt.Printf("err: %v\n", err)
-        fmt.Printf("id: %v\n", id)
-        return id, err == nil && u != nil && id == u.ID
+    if err != nil {
+        return -1
     }
-    println("no cookie")
-    return -1, false
-
+    id, err := strconv.Atoi(cookie.Value)
+    if err != nil {
+        return -1
+    }
+    return id
 }
 
+func LogOut(w http.ResponseWriter, r *http.Request) {
+    expiration := time.Now().Add(-time.Hour)
+    cookie := http.Cookie{
+        Name:    session,
+        Value:   "-1",
+        Expires: expiration,
+        MaxAge:  -1,
+        Path:    "/",
+    }
+    http.SetCookie(w, &cookie)
 
-func Redirect(w http.ResponseWriter, r *http.Request) {
-    id, _ := LogedInOwned(r, nil)
+    http.Redirect(w, r, "/", http.StatusFound)
+}
+
+func (st *GlobalState) SignUpForm(w http.ResponseWriter, r *http.Request) {
+    id := GetClientID(r)
+    fmt.Printf("id: %v\n", id)
     if id > -1 {
-        http.Redirect(w, r, "/home", http.StatusPermanentRedirect)
+        http.SetCookie(w, NewSession(id))
+        //http.Redirect(w, r, "/home", http.StatusMovedPermanently)
+        println("already signed up")
         return
     }
-    http.SetCookie(w, NewSession(id))
-    comp.Index().Render(r.Context(), w)
+    comp.Page(comp.SignUpForm(""), st.Anonym, comp.HomeN).Render(r.Context(), w)
 }
 
+func (st *GlobalState) LogInForm(w http.ResponseWriter, r *http.Request) {
+    id := GetClientID(r)
+    fmt.Printf("id: %v\n", id)
+    if id > -1 {
+        http.SetCookie(w, NewSession(id))
+        //http.Redirect(w, r, "/home", http.StatusMovedPermanently)
+        println("already signed up")
+        return
+    }
+    comp.Page(comp.LogInForm(""), st.Anonym, comp.HomeN).Render(r.Context(), w)
+}
+
+func (st *GlobalState) Home(w http.ResponseWriter, r *http.Request) {
+    id := GetClientID(r)
+    user, err := st.DBH.GetUserById(id)
+    if err != nil {
+        user = st.Anonym
+    }
+    comp.Page(comp.IndexBody(), user, comp.HomeN).Render(r.Context(), w)
+}
 
 
 func SetupUserHandler(mux *http.ServeMux, st *GlobalState) {
-    mux.HandleFunc("GET /", Redirect)
-    mux.HandleFunc("GET /home", st.GetOffers)
-    mux.Handle("GET /signup", templ.Handler(comp.SignUp()))
-    mux.HandleFunc("POST /signup", st.AddUser)
-    mux.Handle("GET /login", templ.Handler(comp.LogIn()))
+    fmt.Printf("st.Anonym: %v\n", st.Anonym)
+    mux.HandleFunc("/", st.Home)
+
+    mux.HandleFunc("/signup", st.SignUpForm)
+    mux.HandleFunc("POST /signup", st.SignUp)
+
+    mux.HandleFunc("/login", st.LogInForm)
     mux.HandleFunc("POST /login", st.Login)
+
+    mux.HandleFunc("GET /offers", st.GetOffers)
+    mux.HandleFunc("GET /home", st.Home)
+
+
     mux.HandleFunc("GET /profile/{id}", st.Profile)
     mux.HandleFunc("GET /users", st.GetAllUsers)
 
@@ -73,4 +117,6 @@ func SetupUserHandler(mux *http.ServeMux, st *GlobalState) {
 
     mux.HandleFunc("GET /profile/{id}/offers", st.GetUserOffers)
     mux.HandleFunc("GET /profile/{id_owner}/offers/{id}", st.GetOffer)
+
+    mux.HandleFunc("POST /logout", LogOut)
 }

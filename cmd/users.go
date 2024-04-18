@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"fmt"
+	_"fmt"
 	"net/http"
 	"strconv"
 
@@ -13,32 +13,26 @@ import (
 
 
 
-func (st *GlobalState) AddUser(w http.ResponseWriter, r *http.Request) {
-    println("signup")
+func (st *GlobalState) SignUp(w http.ResponseWriter, r *http.Request) {
     ID, err := data.SmallestMissingID(st.DBH.DB, st.DBH.Users)
     if err != nil {
         w.WriteHeader(http.StatusInternalServerError)
-        fmt.Printf("err: %v\n", err)
         comp.SignUpForm(err.Error()).Render(r.Context(), w)
         return
     }
     name := r.FormValue("name")
     email := r.FormValue("email")
     password := r.FormValue("psw")
-    println(strconv.Itoa(ID) + name + email + password)
 
     user, err := data.NewUser(ID, name, email, password)
     if err != nil {
-        w.WriteHeader(422)
-        fmt.Printf("err: %v\n", err)
-        comp.SignUpForm(err.Error()).Render(r.Context(), w)
+        w.WriteHeader(500)
         return
     }
     err = st.DBH.InsertUser(user)
     if err != nil {
         w.WriteHeader(422)
-        fmt.Printf("err: %v\n", err)
-        comp.SignUpForm(err.Error()).Render(r.Context(), w)
+        comp.SignUpForm("email or name in use").Render(r.Context(), w)
         return
     }
 
@@ -52,48 +46,69 @@ func (st *GlobalState) Login(w http.ResponseWriter, r *http.Request) {
     user, err := st.DBH.GetUserByEmail(email)
     if err != nil {
         w.WriteHeader(422)
-        fmt.Printf("err: %v\n", err)
-        comp.SignUpForm(err.Error()).Render(r.Context(), w)
+        comp.LogInForm("Email not found").Render(r.Context(), w)
         return
     }
     if err = data.CheckPasswordHash(password, user.Password); err != nil {
         w.WriteHeader(422)
-        comp.SignUpForm("Incorrect password").Render(r.Context(), w)
-        fmt.Printf("passw: err: %v\n", err)
+        comp.LogInForm("Incorrect password").Render(r.Context(), w)
         return
     }
 
-    fmt.Printf("login user: %v\n", user)
     http.SetCookie(w, NewSession(user.ID))
     http.Redirect(w, r, "/profile/" + strconv.Itoa(user.ID), http.StatusFound)
 }
 
 func (st *GlobalState) Profile(w http.ResponseWriter, r *http.Request) {
+    user := GetClientID(r)
+    if user > -1 {
+        http.SetCookie(w, NewSession(user))
+    }
+
+    client, err := st.DBH.GetUserById(user)
+    if err != nil {
+        client = st.Anonym
+    }
+
     id, err := strconv.Atoi(r.PathValue("id"))
+
     if err != nil {
         w.WriteHeader(404)
-        //comp.PageNotFound().Render(r.Context(), w)
+        comp.Page(comp.NotFound(), client, comp.All).Render(r.Context(), w)
         return
     }
-    user, err := st.DBH.GetUserById(id)
+    owner, err := st.DBH.GetUserById(id)
     if err != nil {
         w.WriteHeader(404)
-        //comp.PageNotFound().Render(r.Context(), w)
+        comp.Page(comp.NotFound(), client, comp.All).Render(r.Context(), w)
         return
     }
-    loged, own := LogedInOwned(r, user)
-    if loged > -1 {
-        http.SetCookie(w, NewSession(loged))
+    curr_page := comp.All
+    if client.ID == owner.ID {
+        curr_page = comp.ProfileP
     }
-    comp.UserPage(user, own).Render(r.Context(), w)
+    comp.Page(comp.Profile(owner, client), client, curr_page).Render(r.Context(), w)
 }
 
 func (st *GlobalState) GetAllUsers(w http.ResponseWriter, r *http.Request) {
+    user := GetClientID(r)
+    if user > -1 {
+        http.SetCookie(w, NewSession(user))
+    }
+
+    client, err := st.DBH.GetUserById(user)
+    if err != nil {
+        client = st.Anonym
+    }
+
+    if err != nil || !client.IsAdmin {
+        w.WriteHeader(403)
+        comp.Page(comp.Forbidden(), client, comp.All).Render(r.Context(), w)
+
+    }
     users, err := st.DBH.GetUsers()
     if err != nil {
 
     }
-    id, _ := LogedInOwned(r, nil)
-    http.SetCookie(w, NewSession(id))
-    comp.Users(users, id).Render(r.Context(), w)
+    comp.Page(comp.Users(users, client), client, comp.All).Render(r.Context(), w)
 }
