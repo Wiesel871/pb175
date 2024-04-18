@@ -54,7 +54,6 @@ func (dbh *DBHandler) InsertUser(con *User) error {
     INSERT INTO Users (ID, Name, Email, Password, Details, HasPFP, IsAdmin) 
     VALUES (?, ?, ?, ?, ?, ?, ?)`, 
     con.ID, con.Name, con.Email, con.Password, "<empty>", false, false)
-    fmt.Printf("con.id: %v\n", con.ID)
     return err
 }
 
