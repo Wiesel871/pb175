@@ -38,7 +38,11 @@ func Profile(st ut.GSP) ut.Response {
         if client.ID == owner.ID {
             curr_page = comp.ProfileP
         }
-        comp.Page(comp.Profile(owner, client), client, curr_page).Render(r.Context(), w)
+        comp.Page(
+            comp.Profile(owner, client),
+            client,
+            curr_page, 
+        ).Render(r.Context(), w)
     }
 }
 

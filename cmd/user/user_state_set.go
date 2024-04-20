@@ -2,9 +2,10 @@ package user
 
 import (
 	"fmt"
-	_ "fmt"
 	"net/http"
-	_ "strconv"
+	"strconv"
+    "os"
+    "io"
 
 	comp "wiesel/pb175/components"
     ut "wiesel/pb175/cmd/utility"
@@ -16,21 +17,62 @@ import (
 
 func ChangeDetails(st ut.GSP) ut.Response {
     return func(w http.ResponseWriter, r *http.Request) {
-        client_id := ut.GetClientID(r)
+        id := ut.GetClientID(r)
 
-        client, err := st.DBH.GetUserById(client_id)
+        client, err := st.DBH.GetUserById(id)
         if err != nil {
             w.WriteHeader(403)
             comp.Page(comp.Forbidden(), client, comp.All).Render(r.Context(), w)
         }
         name := r.FormValue("name")
         details := r.FormValue("details")
-        if err = st.DBH.AdjustUser(client, name, details); err != nil {
+
+        err = r.ParseMultipartForm(10 << 20) 
+        if err != nil {
+            return
+        }
+        hasPfp := false
+
+        file, _, err := r.FormFile("photo")
+        if err != nil && err != http.ErrMissingFile {
+            http.Error(w, err.Error(), http.StatusBadRequest)
+            return
+        }
+        if err == nil {
+            defer file.Close()
+            println("got a file")
+
+            path := "images/" + strconv.Itoa(id) + "/pfp.jpeg"
+            f, err := os.OpenFile(
+                path,
+                os.O_WRONLY | os.O_CREATE,
+                0666)
+            if err != nil {
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                fmt.Printf("err: %v\n", err)
+                return
+            }
+            defer f.Close()
+
+            _, err = io.Copy(f, file)
+            if err != nil {
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                fmt.Printf("err: %v\n", err)
+                return
+            }
+            hasPfp = true
+        }
+
+        if err = st.DBH.AdjustUser(client, name, details, hasPfp); err != nil {
             w.WriteHeader(400)
             fmt.Printf("err: %v\n", err)
         }
         client.Name = name
         client.Details = details
-        comp.ChangeDetails(client).Render(r.Context(), w)
+        client.HasPFP = hasPfp
+        
+        fmt.Println(st.DBH.GetUsers())
+
+        comp.Page(comp.Profile(client, client), client, comp.ProfileP).Render(r.Context(), w)
     }
 }
