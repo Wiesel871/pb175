@@ -1,9 +1,13 @@
 package cmd
 
+
 import (
-	"fmt"
 	_ "fmt"
 	"net/http"
+    "log"
+    "context"
+    "time"
+
 	comp "wiesel/pb175/components"
     ut "wiesel/pb175/cmd/utility"
     st "wiesel/pb175/state"
@@ -24,9 +28,25 @@ func Home(st ut.GSP) ut.Response {
     }
 }
 
+func Shutdown(st ut.GSP) ut.Response {
+    return func(w http.ResponseWriter, r *http.Request) {
+        id := ut.GetClientID(r)
+        user := ut.GetUser(st, id)
+        if !user.IsAdmin {
+            comp.Page(comp.Forbidden(), user, comp.All).Render(r.Context(), w)
+            return
+        }
+
+        shutdownCtx, shutdownRelease := context.WithTimeout(context.Background(), 3*time.Second)
+        defer shutdownRelease()
+
+        if err := st.SRV.Shutdown(shutdownCtx); err != nil {
+            log.Fatalf("HTTP shutdown error: %v", err)
+        }
+    }
+}
 
 func SetupUserHandler(mux *http.ServeMux, st *st.GlobalState) {
-    fmt.Printf("st.Anonym: %v\n", st.Anonym)
     mux.HandleFunc("/", Home(st))
     mux.HandleFunc("GET /home", Home(st))
 
@@ -56,4 +76,5 @@ func SetupUserHandler(mux *http.ServeMux, st *st.GlobalState) {
     mux.HandleFunc("GET /add_offer", of.AddOffer(st))
     mux.HandleFunc("POST /add_offer", of.UploadOffer(st))
 
+    mux.HandleFunc("POST /shutdown", Shutdown(st))
 }

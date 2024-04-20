@@ -58,7 +58,8 @@ templ NavBar(client *data.User, page int) {
                 }
             }
             if client.IsAdmin {
-                <li><a hx-target="#bod" hx-get="/users" hx-replace-url="true">Uzivatelia</a></li>
+                <li><a href="#" hx-target="#bod" hx-get="/users" hx-replace-url="true">Uzivatelia</a></li>
+                <li><a href="#" hx-post="/shutdown">Shutdown</a></li>
             }
             if client.ID > -1 {
                 <li><a href="#" hx-target="#bod" hx-post="/logout" hx-replace-url="true">Odhlasit</a></li>
