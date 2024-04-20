@@ -13,7 +13,7 @@ import (
 	_ "wiesel/pb175/components"
 	data "wiesel/pb175/database"
 	cmd "wiesel/pb175/cmd"
-
+    state "wiesel/pb175/state"
 
 	_ "github.com/a-h/templ"
 
@@ -33,18 +33,19 @@ func main() {
         IsAdmin: false,
         HasPFP: false,
     }
-    st := cmd.GlobalState {
+    st := state.GlobalState {
         DBH: dbh,
         Anonym: &anonym,
     }
 
     mux := http.NewServeMux()
     cmd.SetupUserHandler(mux, &st)
-    srv := &http.Server {
-        Addr: ":8090",
+    st.SRV = &http.Server {
+        Addr: ":8070",
         Handler: mux,
         ErrorLog: log.Default(),
     }
+
     users, err := st.DBH.GetUsers()
     if err != nil {
         fmt.Printf("get users: %v\n", err)
@@ -73,13 +74,14 @@ func main() {
         shutdownCtx, shutdownRelease := context.WithTimeout(context.Background(), 10*time.Second)
         defer shutdownRelease()
 
-        if err := srv.Shutdown(shutdownCtx); err != nil {
+        if err := st.SRV.Shutdown(shutdownCtx); err != nil {
             log.Fatalf("HTTP shutdown error: %v", err)
         }
     }()
 
-    if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+    if err := st.SRV.ListenAndServe(); err != nil && err != http.ErrServerClosed {
         fmt.Printf("err: %v\n", err)
     }
     fmt.Println("Shutdown")
+    st.DBH.DB.Close()
 }
