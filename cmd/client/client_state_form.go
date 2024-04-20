@@ -2,7 +2,6 @@ package client
 
 import (
     "net/http"
-    "fmt"
 
     comp "wiesel/pb175/components"
     ut "wiesel/pb175/cmd/utility"
@@ -13,7 +12,6 @@ import (
 func SignUpForm(st ut.GSP) ut.Response {
     return func (w http.ResponseWriter, r *http.Request) {
         id := ut.GetClientID(r)
-        fmt.Printf("id: %v\n", id)
         if id > -1 {
             http.SetCookie(w, ut.NewSession(id))
             http.Redirect(w, r, "/home", http.StatusMovedPermanently)
@@ -27,7 +25,6 @@ func SignUpForm(st ut.GSP) ut.Response {
 func LogInForm(st ut.GSP) ut.Response {
     return func (w http.ResponseWriter, r *http.Request) {
         id := ut.GetClientID(r)
-        fmt.Printf("id: %v\n", id)
         if id > -1 {
             http.SetCookie(w, ut.NewSession(id))
             http.Redirect(w, r, "/home", http.StatusMovedPermanently)
