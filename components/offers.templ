@@ -51,6 +51,22 @@ templ Offers(offers data.Offers, owner, client *data.User) {
     }
 }
 
+templ ChangeOffer(target *data.Offer) {
+    <form hx-post={"/change_offer/" + strconv.Itoa(target.ID)} hx-encoding="multipart/form-data" hx-target="#bod">
+    <input type="text" name="name" value={target.Name}></input>
+    <hr/>
+    <textarea name="desc">{target.Description}</textarea>
+    <div class="grid">
+        <div>
+            <input type="file" name="photo"/>
+        </div>
+        <div>
+            <button type="submit">Vymen</button>
+        </div>
+    </div>
+    </form>
+}
+
 templ Offer(offer *data.Offer, owner, client *data.User) {
     <div class="grid">
         <div>
@@ -60,8 +76,12 @@ templ Offer(offer *data.Offer, owner, client *data.User) {
         </div>
 
         <div class="container">
+        if owner.ID != client.ID {
             <div><h1>{offer.Name}</h1></div>
             <div>{ offer.Description }</div>
+        } else {
+            @ChangeOffer(offer)
+        }
         </div>
         <div/>
     </div>

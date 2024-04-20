@@ -77,6 +77,15 @@ func (dbh *DBHandler) GetOfferById(id int) (*Offer, error) {
     return offer, nil
 }
 
+func (dbh *DBHandler) AdjustOffer(o *Offer, name, desc string) error {
+    _, err := dbh.DB.Exec(`
+    UPDATE ` + dbh.Offers + ` 
+    SET Name = ?, Description = ?
+    WHERE ID = ?;`, 
+    name, desc, o.ID)
+    return err
+}
+
 
 func initOffers(db *sql.DB) (string, error) {
     name := "Offers"

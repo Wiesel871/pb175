@@ -76,5 +76,7 @@ func SetupUserHandler(mux *http.ServeMux, st *st.GlobalState) {
     mux.HandleFunc("GET /add_offer", of.AddOffer(st))
     mux.HandleFunc("POST /add_offer", of.UploadOffer(st))
 
+    mux.HandleFunc("POST /change_offer/{id}", of.ChangeOffer(st))
+
     mux.HandleFunc("POST /shutdown", Shutdown(st))
 }
