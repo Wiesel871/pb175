@@ -115,11 +115,5 @@ func initUsers(db *sql.DB) (string, error) {
             HasPFP BOOL NOT NULL,
             IsAdmin BOOL NOT NULL
 		)`); 
-    pass, _ := HashPassword("Foch258147")
-    _, _ = db.Exec(`
-    INSERT INTO Users (ID, Name, Email, Password, Details, HasPFP, IsAdmin) 
-    VALUES (0, "Filip", "filpavlovic@gmail.com", ?, "Him", false, true)`,
-    pass)
-
     return name, err
 }
