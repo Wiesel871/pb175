@@ -94,7 +94,7 @@ func (dbh *DBHandler) GetUsers() (Users, error) {
 	return users, nil
 }
 
-func (dbh *DBHandler) AdjustUser(u *User, name, details string, hasPFP bool) error {
+func (dbh *DBHandler) AdjustUser(u *User, name, email, details string, hasPFP bool) error {
     _, err := dbh.DB.Exec(`
     UPDATE ` + dbh.Users + ` 
     SET Name = ?, Email = ?, Password = ?, Details = ?, HasPFP = ?

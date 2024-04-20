@@ -25,6 +25,7 @@ func ChangeDetails(st ut.GSP) ut.Response {
             comp.Page(comp.Forbidden(), client, comp.All).Render(r.Context(), w)
         }
         name := r.FormValue("name")
+        email := r.FormValue("email")
         details := r.FormValue("details")
 
         err = r.ParseMultipartForm(10 << 20) 
@@ -63,7 +64,7 @@ func ChangeDetails(st ut.GSP) ut.Response {
             hasPfp = true
         }
         hasPfp = hasPfp || client.HasPFP
-        if err = st.DBH.AdjustUser(client, name, details, hasPfp); err != nil {
+        if err = st.DBH.AdjustUser(client, name, email, details, hasPfp); err != nil {
             w.WriteHeader(400)
             fmt.Printf("err: %v\n", err)
         }

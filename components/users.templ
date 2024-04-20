@@ -47,6 +47,8 @@ templ ChangeDetails(target *data.User) {
     <input type="text" name="name" value={target.Name}></input>
     <hr/>
     <textarea name="details">{target.Details}</textarea>
+    <hr/>
+    <input type="email" name="email" value={target.Email}></input>
     <div class="grid">
         <div>
             <input type="file" name="photo"/>
