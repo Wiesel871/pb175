@@ -62,7 +62,7 @@ func ChangeDetails(st ut.GSP) ut.Response {
             }
             hasPfp = true
         }
-
+        hasPfp = hasPfp || client.HasPFP
         if err = st.DBH.AdjustUser(client, name, details, hasPfp); err != nil {
             w.WriteHeader(400)
             fmt.Printf("err: %v\n", err)
