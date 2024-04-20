@@ -1,19 +1,20 @@
 package offers
 
 import (
-    _ "fmt"
+	"fmt"
     "io"
-    "net/http"
-    "os"
-    "strconv"
+	"net/http"
+	"os"
+	"strconv"
 
-    comp "wiesel/pb175/components"
-    ut "wiesel/pb175/cmd/utility"
-    db "wiesel/pb175/database"
+	ut "wiesel/pb175/cmd/utility"
+	comp "wiesel/pb175/components"
+	db "wiesel/pb175/database"
 )
 
 func AddOffer(st ut.GSP) ut.Response {
     return func (w http.ResponseWriter, r *http.Request) {
+        println("got add offer get")
         id := ut.GetClientID(r)
         client := ut.GetUser(st, id)
         if client.ID < 0 {
@@ -27,23 +28,24 @@ func AddOffer(st ut.GSP) ut.Response {
 
 func UploadOffer(st ut.GSP) ut.Response {
     return func (w http.ResponseWriter, r *http.Request) {
+        println("got upload post")
         id := ut.GetClientID(r)
         client := ut.GetUser(st, id)
         if id == -1 {
             w.WriteHeader(403)
+            println("invalid id")
             comp.Page(comp.Forbidden(), client, comp.All).Render(r.Context(), w)
             return
         }
 
         name := r.FormValue("name")
         desc := r.FormValue("description")
+        fmt.Printf("name: %v\n", name)
+        fmt.Printf("desc: %v\n", desc)
+
         of_id, err := db.SmallestMissingID(st.DBH.DB, st.DBH.Offers)
-        if err = st.DBH.InsertOffer(db.NewOffer(of_id, id, name, desc)); err != nil { 
 
-        }
-
-
-        err = r.ParseMultipartForm(10 << 20) // 10MB max
+        err = r.ParseMultipartForm(10 << 20) 
         if err != nil {
             return
         }
@@ -55,19 +57,26 @@ func UploadOffer(st ut.GSP) ut.Response {
         }
         defer file.Close()
 
+        path := "images/" + strconv.Itoa(id) + "/" + strconv.Itoa(of_id) + ".jpeg"
         f, err := os.OpenFile(
-            "images/" + strconv.Itoa(id) + "/offers/" + strconv.Itoa(of_id) + ".jpg",
+            path,
             os.O_WRONLY | os.O_CREATE,
             0666)
-
         if err != nil {
             http.Error(w, err.Error(), http.StatusInternalServerError)
+            fmt.Printf("err: %v\n", err)
             return
         }
         defer f.Close()
 
         _, err = io.Copy(f, file)
         if err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            fmt.Printf("err: %v\n", err)
+            return
+        }
+        if err = st.DBH.InsertOffer(db.NewOffer(of_id, id, name, desc)); err != nil { 
+            fmt.Printf("uo err: %v\n", err)
             http.Error(w, err.Error(), http.StatusInternalServerError)
             return
         }
