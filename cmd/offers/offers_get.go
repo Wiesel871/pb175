@@ -99,7 +99,7 @@ func GetOffers(st ut.GSP) ut.Response {
         client := ut.GetUser(st, id)
 
         comp.Page(
-            comp.Offers(offers, nil, client), 
+            comp.Offers(offers, st.Anonym, client), 
             client, 
             comp.OffersN,
         ).Render(r.Context(), w)
