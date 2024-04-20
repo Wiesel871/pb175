@@ -7,7 +7,12 @@ templ Offers(offers data.Offers, owner, client *data.User) {
     <div class="grid">
         <div>
         if owner != nil && owner.ID == client.ID && len(offers) < 10 {
-            <button hx-get={"/profile/" + strconv.Itoa(owner.ID) + "/add_offer"} hx-target="#bod" hx-replace-url="true">Add offer</button>
+            <button 
+            hx-get="/add_offer" 
+            hx-target="#bod" 
+            hx-replace-url="true">
+            Add offer
+            </button>
         }
         </div>
         <div/>
@@ -15,10 +20,23 @@ templ Offers(offers data.Offers, owner, client *data.User) {
     <br/>
     for _, offer := range offers {
         <div class="grid">
-        <div hx-get={"/profile/" + strconv.Itoa(offer.ID_owner) +  "/offers/" + strconv.Itoa(offer.ID)} hx-trigger="click" hx-target="#bod" hx-replace-url="true">
-            <img src={"images/" + strconv.Itoa(offer.ID_owner) + "/" + strconv.Itoa(offer.ID) + ".jpg" }/>
-            ID: <span>{ strconv.Itoa(offer.ID) }</span>
-            Name: <span>{ offer.Name }</span>
+        <div 
+        class="grid"
+        style="border: 2px solid transparent; transition: border-color 0.3s;"
+        onmouseover="this.style.borderColor='red';" 
+        onmouseout="this.style.borderColor='transparent';"
+        hx-get={"/profile/" + strconv.Itoa(offer.ID_owner) +  "/offers/" + strconv.Itoa(offer.ID)} 
+        hx-trigger="click" 
+        hx-target="#bod" 
+        hx-replace-url="true">
+            <img 
+            src={"/images/" + strconv.Itoa(offer.ID_owner) + "/" + strconv.Itoa(offer.ID) + ".jpeg" } 
+            style="object-fit: scale-down;"
+            />
+            <div class="container">
+            <span><h3>{ offer.Name }</h3></span>
+            <span> { offer.Description }</span>
+            </div>
         </div>
         if owner != nil && owner.ID == client.ID {
             <div>
@@ -33,7 +51,9 @@ templ Offers(offers data.Offers, owner, client *data.User) {
 templ Offer(offer *data.Offer, owner, client *data.User) {
     <div class="grid">
         <div>
-        <img src={"images/" + strconv.Itoa(offer.ID_owner) + "/" + strconv.Itoa(offer.ID) + ".jpg" }/>
+        <img 
+        src={"/images/" + strconv.Itoa(offer.ID_owner) + "/" + strconv.Itoa(offer.ID) + ".jpeg" } 
+        style="object-fit: contain;"/>
         </div>
 
         <div class="container">
@@ -42,4 +62,27 @@ templ Offer(offer *data.Offer, owner, client *data.User) {
         </div>
         <div/>
     </div>
+}
+
+templ NewOffer(client *data.User) {
+    <form 
+        hx-post="/add_offer"
+        hx-encoding="multipart/form-data"
+        hx-target="#bod">
+    <div class="grid">
+        <div>
+            <input type="file" name="photo"/>
+        </div>
+        <div class="container">
+            <input type="text" name="name" placeholder="Nazov"/>
+            <hr/>
+            <textarea name="description" placeholder="Popis"></textarea>
+            <button 
+                type="submit">
+                Uloz
+            </button>
+        </div>
+        <div/>
+    </div>
+    </form>
 }

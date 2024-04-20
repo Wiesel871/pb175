@@ -42,23 +42,48 @@ templ LogInForm(err string) {
     </div>
 }
 
+templ ChangeDetails(target *data.User) {
+    <form hx-post="/change_details" hx-encoding="multipart/form-data" hx-target="#bod">
+    <input type="text" name="name" value={target.Name}></input>
+    <hr/>
+    <textarea name="details">{target.Details}</textarea>
+    <div class="grid">
+        <div>
+            <input type="file" name="photo"/>
+        </div>
+        <div>
+            <button type="submit">Vymen</button>
+        </div>
+    </div>
+    </form>
+}
+
 templ Profile(target *data.User, client *data.User) {
     <div class="grid">
         <div class="container">
         if !target.HasPFP {
-            <img src="/images/base_pfp.jpg" width="512" height="512"></img>
+            <img src="/images/base_pfp.jpeg" style="object-fit: contain;"></img>
         } else {
-            <img src={ "/images/" + strconv.Itoa(target.ID) + "/pfp.jpg" } width="512" height="512"></img>
+            <img src={ "/images/" + strconv.Itoa(target.ID) + "/pfp.jpeg" } style="object-fit: contain;"></img>
         }
         </div>
-        <div class="container">
-            <div><h1><u>{target.Name}</u></h1></div>
-            <hr/>
-            <div>{ target.Details }</div>
+        <div class="container" id="prof_form">
+            if client == nil || target.ID != client.ID {
+                <div><h1><u>{target.Name}</u></h1></div>
+                <hr/>
+                <div>{ target.Details }</div>
+            } else {
+                @ChangeDetails(target)
+            }
         </div>
         <div class="container">
             <div align="right">
-            <a href="#" hx-target="#bod" hx-get={"/profile/" + strconv.Itoa(target.ID) + "/offers"} hx-replace-url="true">Moje Ponuky</a>
+            <a  href="#" 
+                hx-target="#bod" 
+                hx-get={"/profile/" + strconv.Itoa(target.ID) + "/offers"} 
+                hx-replace-url="true">
+                Moje Ponuky
+            </a>
             </div>
             if client != nil && (client.ID == target.ID || client.IsAdmin) {
                 <br/>
@@ -73,7 +98,14 @@ templ Profile(target *data.User, client *data.User) {
 templ Users(users data.Users, client *data.User) {
     for _, user := range users {
         <div class="grid">
-            <div hx-trigger="click" hx-get={"/profile/" + strconv.Itoa(user.ID)} hx-target="#bod" hx-replace-url="true">
+            <div 
+            style="border: 2px solid transparent; transition: border-color 0.3s;"
+            onmouseover="this.style.borderColor='red';" 
+            onmouseout="this.style.borderColor='transparent';"
+            hx-trigger="click" 
+            hx-get={"/profile/" + strconv.Itoa(user.ID)} 
+            hx-target="#bod" 
+            hx-replace-url="true">
             ID: <span>{ strconv.Itoa(user.ID) }</span>
             Name: <span>{ user.Name }</span>
             Email: <span>{ user.Email }</span>
