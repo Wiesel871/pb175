@@ -31,7 +31,6 @@ func (dbh *DBHandler) InsertOffer(of *Offer) error {
     INSERT INTO Offers (ID, ID_owner, Name, Description) 
     VALUES (?, ?, ?, ?)`, 
     of.ID, of.ID_owner, of.Name, of.Description)
-    fmt.Printf("of.id: %v\n", of.ID)
     return err
 }
 
@@ -46,8 +45,7 @@ func (dbh *DBHandler) GetOffers() (Offers, error) {
 	var offers Offers
 	for rows.Next() {
 		var offer Offer
-        err := rows.Scan(&offer.ID, &offer.ID_owner, &offer.Name, &offer.Description)
-        fmt.Printf("err: %v\n", err)
+        _ = rows.Scan(&offer.ID, &offer.ID_owner, &offer.Name, &offer.Description)
 		offers = append(offers, offer)
 	}
 	return offers, nil
@@ -90,19 +88,13 @@ func initOffers(db *sql.DB) (string, error) {
             Description TEXT,
             FOREIGN KEY (ID_owner) REFERENCES Users(ID)
         )`) 
-    _, err = db.Exec(`
-    INSERT OR REPLACE INTO ` + name + ` (ID, ID_owner, Name, Description) 
+    _, _ = db.Exec(`
+    INSERT INTO ` + name + ` (ID, ID_owner, Name, Description) 
     VALUES (0, 0, "test1", "idk")`)
-    if err != nil {
-        println(err.Error()) 
-    }
     
-    _, err = db.Exec(`
-    INSERT OR REPLACE INTO ` + name + ` (ID, ID_owner, Name, Description) 
+    _, _ = db.Exec(`
+    INSERT INTO ` + name + ` (ID, ID_owner, Name, Description) 
     VALUES (1, 0, "test2", "idk")`)
-    if err != nil {
-        println(err.Error()) 
-    }
 
     return name, err
 }

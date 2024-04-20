@@ -51,7 +51,7 @@ func NewUser(id int, name string, email string, password string) (*User, error) 
 
 func (dbh *DBHandler) InsertUser(con *User) error {
     _, err := dbh.DB.Exec(`
-    INSERT INTO Users (ID, Name, Email, Password, Details, HasPFP, IsAdmin) 
+    INSERT INTO ` + dbh.Users + ` (ID, Name, Email, Password, Details, HasPFP, IsAdmin) 
     VALUES (?, ?, ?, ?, ?, ?, ?)`, 
     con.ID, con.Name, con.Email, con.Password, "<empty>", false, false)
     return err
@@ -94,6 +94,15 @@ func (dbh *DBHandler) GetUsers() (Users, error) {
 	return users, nil
 }
 
+func (dbh *DBHandler) AdjustUser(u *User, name, details string, hasPFP bool) error {
+    _, err := dbh.DB.Exec(`
+    UPDATE ` + dbh.Users + ` 
+    SET Name = ?, Email = ?, Password = ?, Details = ?, HasPFP = ?
+    WHERE ID = ?;`, 
+    name, u.Email, u.Password, details, hasPFP, u.ID)
+    return err
+}
+
 func initUsers(db *sql.DB) (string, error) {
     name := "Users"
     _, err := db.Exec(`
@@ -108,7 +117,7 @@ func initUsers(db *sql.DB) (string, error) {
 		)`); 
     pass, _ := HashPassword("Foch258147")
     _, _ = db.Exec(`
-    INSERT OR REPLACE INTO Users (ID, Name, Email, Password, Details, HasPFP, IsAdmin) 
+    INSERT INTO Users (ID, Name, Email, Password, Details, HasPFP, IsAdmin) 
     VALUES (0, "Filip", "filpavlovic@gmail.com", ?, "Him", false, true)`,
     pass)
 
