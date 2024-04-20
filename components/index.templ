@@ -1,5 +1,6 @@
 package components
 
+
 import "strconv"
 import data "wiesel/pb175/database"
 
@@ -20,6 +21,35 @@ templ Header() {
             href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.slate.min.css"/>
             <meta name="color-scheme" content="light"/>
 //            <meta name="htmx-config" content='{"defaultSwapStyle":"outerHTML"}'/>
+            <style>
+                .content {
+                    height: 25vh;
+                    white-space: nowrap; 
+                    overflow: hidden; 
+                    text-overflow: ellipsis; 
+                    border: 5px solid transparent; 
+                    transition: border-color 0.3s;
+                }
+                .navbar {
+                    background-color: #333;
+                    overflow: hidden;
+                    position: fixed;
+                    top: 0;
+                    width: 100%;
+                    margin-bottom: 10vh;
+                }
+
+                body {
+                    margin-top: 10vh;
+                }
+
+                .vertical-line {
+                    border-left: 1px solid #000;
+                    height: 100%;
+                    margin: 0 2px;
+                }
+
+            </style>
         </head>
 }
 
@@ -38,11 +68,12 @@ templ AllowError() {
 }
 
 templ NavBar(client *data.User, page int) {
+    <div class="navbar">
     <nav>
-        <ul>
+        <ul style="margin-left: 3vw;">
             <li><strong>NeUplneBazos</strong></li>
         </ul>
-        <ul>
+        <ul style="margin-right: 2vw;">
             if page != HomeN {
                 <li><a href="#" hx-get="/home" hx-target="#bod">Domov</a></li>
             }
@@ -66,12 +97,13 @@ templ NavBar(client *data.User, page int) {
             }
         </ul>
     </nav>
+    </div>
 }
 
 templ Page(t templ.Component, client *data.User, page int) {
     <html>
     @Header()
-    <body id="bod">
+    <body id="bod" hx-push-url="true">
         @NavBar(client, page)
         @t
     </body>

@@ -77,7 +77,7 @@ templ Profile(target *data.User, client *data.User) {
             }
         </div>
         <div class="container">
-            <div align="right">
+            <div align="right" style="margin-right: 2vw;">
             <a  href="#" 
                 hx-target="#bod" 
                 hx-get={"/profile/" + strconv.Itoa(target.ID) + "/offers"} 
@@ -87,7 +87,7 @@ templ Profile(target *data.User, client *data.User) {
             </div>
             if client != nil && (client.ID == target.ID || client.IsAdmin) {
                 <br/>
-                <div align="right">
+                <div align="right" style="margin-right: 2vw;">
                 <a href="#" hx-target="#bod" hx-delete={"/profile/" + strconv.Itoa(target.ID)} hx-replace-url="true">Terminuj</a>
                 </div>
             }
@@ -99,8 +99,8 @@ templ Users(users data.Users, client *data.User) {
     for _, user := range users {
         <div class="grid">
             <div 
-            style="border: 2px solid transparent; transition: border-color 0.3s;"
-            onmouseover="this.style.borderColor='red';" 
+            class="content"
+            onmouseover="this.style.borderColor='black';" 
             onmouseout="this.style.borderColor='transparent';"
             hx-trigger="click" 
             hx-get={"/profile/" + strconv.Itoa(user.ID)} 
@@ -113,6 +113,7 @@ templ Users(users data.Users, client *data.User) {
             <div>
                 <button hx-delete={"/profile/" + strconv.Itoa(user.ID)}>🗑</button>
             </div>
+            <div/>
         </div>
         <br/>
     }

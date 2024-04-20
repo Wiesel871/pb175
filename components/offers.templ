@@ -20,29 +20,32 @@ templ Offers(offers data.Offers, owner, client *data.User) {
     <br/>
     for _, offer := range offers {
         <div class="grid">
-        <div 
-        class="grid"
-        style="border: 2px solid transparent; transition: border-color 0.3s;"
-        onmouseover="this.style.borderColor='red';" 
-        onmouseout="this.style.borderColor='transparent';"
-        hx-get={"/profile/" + strconv.Itoa(offer.ID_owner) +  "/offers/" + strconv.Itoa(offer.ID)} 
-        hx-trigger="click" 
-        hx-target="#bod" 
-        hx-replace-url="true">
-            <img 
-            src={"/images/" + strconv.Itoa(offer.ID_owner) + "/" + strconv.Itoa(offer.ID) + ".jpeg" } 
-            style="object-fit: scale-down;"
-            />
-            <div class="container">
-            <span><h3>{ offer.Name }</h3></span>
-            <span> { offer.Description }</span>
+            <div class="content"
+            onmouseover="this.style.borderColor='white';" 
+            onmouseout="this.style.borderColor='transparent';">
+                <div 
+                class="grid"
+                hx-get={"/profile/" + strconv.Itoa(offer.ID_owner) +  "/offers/" + strconv.Itoa(offer.ID)} 
+                hx-trigger="click" 
+                hx-target="#bod" 
+                hx-replace-url="true">
+                    <img 
+                    src={"/images/" + strconv.Itoa(offer.ID_owner) + "/" + strconv.Itoa(offer.ID) + ".jpeg" } 
+                    style="object-fit: scale-down;"
+                    />
+                    <div class="container">
+                    <span><h3>{ offer.Name }</h3></span>
+                    <span> { offer.Description }</span>
+                    </div>
+                </div>
+                <br/>
+                <hr/>
             </div>
-        </div>
-        if owner != nil && owner.ID == client.ID {
-            <div>
-            <button hx-delete={"/profile/" + strconv.Itoa(offer.ID_owner) +  "/offers/" + strconv.Itoa(offer.ID)} hx-replace-url="true">🗑</button>
-            </div>
-        }
+            if owner != nil && owner.ID == client.ID {
+                <div>
+                    <button hx-delete={"/profile/" + strconv.Itoa(offer.ID_owner) +  "/offers/" + strconv.Itoa(offer.ID)} hx-replace-url="true">🗑</button>
+                </div>
+            }
         </div>
         <br/>
     }
