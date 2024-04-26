@@ -103,6 +103,36 @@ func (dbh *DBHandler) AdjustUser(u *User, name, email, details string, hasPFP bo
     return err
 }
 
+func (dbh *DBHandler) DeleteUser(id int) error {
+    tx, err := dbh.DB.Begin()
+    if err != nil {
+        return err
+    }
+    offers, err := dbh.GetOffersByOwner(id)
+    if err != nil {
+        tx.Rollback()
+        return err
+    }
+    for _, offer := range offers {
+        _, err = tx.Exec(`
+        DELETE FROM ` + dbh.Offers + `
+        WHERE ID = ?
+        `, offer.ID)
+        if err != nil {
+            tx.Rollback()
+            return err
+        }
+    }
+    _, err = tx.Exec(`
+    DELETE FROM ` + dbh.Users + `
+    WHERE ID = ?
+    `, id)
+    if err == nil {
+        tx.Commit()
+    }
+    return err
+}
+
 func initUsers(db *sql.DB) (string, error) {
     name := "Users"
     _, err := db.Exec(`

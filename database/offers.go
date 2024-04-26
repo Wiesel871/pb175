@@ -86,6 +86,14 @@ func (dbh *DBHandler) AdjustOffer(o *Offer, name, desc string) error {
     return err
 }
 
+func (dbh *DBHandler) DeleteOffer(id int) error {
+    _, err := dbh.DB.Exec(`
+    DELETE FROM ` + dbh.Offers + `
+    WHERE ID = ?
+    `, id)
+    return err
+}
+
 
 func initOffers(db *sql.DB) (string, error) {
     name := "Offers"
