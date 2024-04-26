@@ -41,7 +41,7 @@ func main() {
     mux := http.NewServeMux()
     cmd.SetupUserHandler(mux, &st)
     st.SRV = &http.Server {
-        Addr: ":8070",
+        Addr: ":8080",
         Handler: mux,
         ErrorLog: log.Default(),
     }
@@ -66,6 +66,12 @@ func main() {
     }
 
 
+    if len(os.Args) > 1 {
+        id, _ := data.SmallestMissingID(st.DBH.DB, st.DBH.Users)
+        admin, _ := data.NewUser(id, os.Args[1], os.Args[2], os.Args[3])
+        admin.IsAdmin = true
+        st.DBH.InsertUser(admin)
+    }
     go func() {
         sigChan := make(chan os.Signal, 1)
         signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
