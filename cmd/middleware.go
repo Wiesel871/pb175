@@ -43,3 +43,12 @@ func Logging(next http.Handler) http.Handler {
 		log.Println(wrapped.statusCode, r.Method, r.URL.Path, time.Since(start))
 	})
 }
+
+func NoCache(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate") // HTTP 1.1.
+        w.Header().Set("Pragma", "no-cache")
+		w.Header().Set("Expires", "0")
+		next(w, r)
+	}
+}
