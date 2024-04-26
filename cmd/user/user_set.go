@@ -28,6 +28,10 @@ func ChangeDetails(st ut.GSP) ut.Response {
         email := r.FormValue("email")
         details := r.FormValue("details")
 
+        client.Name = name
+        client.Details = details
+        
+
         err = r.ParseMultipartForm(10 << 20) 
         if err != nil {
             return
@@ -36,7 +40,7 @@ func ChangeDetails(st ut.GSP) ut.Response {
 
         file, _, err := r.FormFile("photo")
         if err != nil && err != http.ErrMissingFile {
-            http.Error(w, err.Error(), http.StatusBadRequest)
+            http.Error(w, err.Error(), http.StatusInternalServerError)
             return
         }
         if err == nil {
@@ -57,23 +61,21 @@ func ChangeDetails(st ut.GSP) ut.Response {
 
             _, err = io.Copy(f, file)
             if err != nil {
-                http.Error(w, err.Error(), http.StatusInternalServerError)
-                fmt.Printf("err: %v\n", err)
+                w.WriteHeader(400)
+                comp.Profile(client, client, err.Error()).Render(r.Context(), w)
                 return
             }
             hasPfp = true
         }
         hasPfp = hasPfp || client.HasPFP
+
+        client.HasPFP = hasPfp
         if err = st.DBH.AdjustUser(client, name, email, details, hasPfp); err != nil {
             w.WriteHeader(400)
             fmt.Printf("err: %v\n", err)
         }
-        client.Name = name
-        client.Details = details
-        client.HasPFP = hasPfp
-        
-        fmt.Println(st.DBH.GetUsers())
 
-        comp.Page(comp.Profile(client, client), client, comp.ProfileP).Render(r.Context(), w)
+        w.Header().Set("HX-Refresh", "true")
+        comp.Page(comp.Profile(client, client, ""), client, comp.All).Render(r.Context(), w)
     }
 }
