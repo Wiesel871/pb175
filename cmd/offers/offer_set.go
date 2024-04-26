@@ -49,7 +49,6 @@ func ChangeOffer(st ut.GSP) ut.Response {
         }
         if err == nil {
             defer file.Close()
-            println("got a file")
 
             path := "images/" + strconv.Itoa(id) + "/" + of_id_str + ".jpeg"
             f, err := os.OpenFile(
@@ -72,13 +71,13 @@ func ChangeOffer(st ut.GSP) ut.Response {
         }
         if err = st.DBH.AdjustOffer(offer, name, desc); err != nil {
             w.WriteHeader(400)
-            fmt.Printf("err: %v\n", err)
             return
         }
 
         offer.Description = desc
         offer.Name = name
         
-        comp.Page(comp.Offer(offer, client, client), client, comp.ProfileP).Render(r.Context(), w)
+        w.Header().Set("HX-Refresh", "true")
+        comp.Page(comp.Offer(offer, client, client, ""), client, comp.All).Render(r.Context(), w)
     }
 }

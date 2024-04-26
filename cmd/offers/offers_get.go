@@ -84,7 +84,7 @@ func GetOffer(st ut.GSP) ut.Response {
             comp.Page(comp.NotFound(), client, comp.All).Render(r.Context(), w)
             return
         }
-        comp.Page(comp.Offer(offer, owner, client), client, comp.All).Render(r.Context(), w)
+        comp.Page(comp.Offer(offer, owner, client, ""), client, comp.All).Render(r.Context(), w)
     }
 }
 

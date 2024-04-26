@@ -14,7 +14,6 @@ import (
 
 func AddOffer(st ut.GSP) ut.Response {
     return func (w http.ResponseWriter, r *http.Request) {
-        println("got add offer get")
         id := ut.GetClientID(r)
         client := ut.GetUser(st, id)
         if client.ID < 0 {
@@ -22,7 +21,7 @@ func AddOffer(st ut.GSP) ut.Response {
             comp.Page(comp.Forbidden(), client, comp.All).Render(r.Context(), w)
             return
         }
-        comp.Page(comp.NewOffer(client), client, comp.All).Render(r.Context(), w)
+        comp.Page(comp.NewOffer(client, ""), client, comp.All).Render(r.Context(), w)
     }
 }
 
@@ -40,10 +39,9 @@ func UploadOffer(st ut.GSP) ut.Response {
 
         name := r.FormValue("name")
         desc := r.FormValue("description")
-        fmt.Printf("name: %v\n", name)
-        fmt.Printf("desc: %v\n", desc)
 
         of_id, err := db.SmallestMissingID(st.DBH.DB, st.DBH.Offers)
+        offer := db.NewOffer(of_id, id, name, desc)
 
         err = r.ParseMultipartForm(10 << 20) 
         if err != nil {
@@ -52,7 +50,8 @@ func UploadOffer(st ut.GSP) ut.Response {
 
         file, _, err := r.FormFile("photo")
         if err != nil {
-            http.Error(w, err.Error(), http.StatusBadRequest)
+            w.WriteHeader(400)
+            comp.Offer(offer, client, client, "photo missing").Render(r.Context(), w)
             return
         }
         defer file.Close()
@@ -80,6 +79,6 @@ func UploadOffer(st ut.GSP) ut.Response {
             http.Error(w, err.Error(), http.StatusInternalServerError)
             return
         }
-        http.Redirect(w, r, "/profile", http.StatusMovedPermanently)
+        http.Redirect(w, r, "/profile/" + strconv.Itoa(id) + "/offers", http.StatusMovedPermanently)
     }
 }
