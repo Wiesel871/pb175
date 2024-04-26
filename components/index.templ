@@ -40,7 +40,7 @@ templ Header() {
                 }
 
                 body {
-                    margin-top: 11vh;
+                    margin-top: 15vh;
                 }
 
             </style>
@@ -62,7 +62,7 @@ templ AllowError() {
 }
 
 templ NavBar(client *data.User, page int) {
-    <div class="navbar">
+    <div class="navbar" hx-push-url="true" hx-replace-url="true">
     <nav>
         <ul style="margin-left: 3vw;">
             <li><strong>NeUplneBazos</strong></li>
@@ -98,11 +98,11 @@ templ NavBar(client *data.User, page int) {
             </summary>
             <ul dir="rtl">
                 if client.ID > -1 {
-                    <li><a href="#" hx-get={"/profile/" + strconv.Itoa(client.ID) } hx-target="#bod">Profil</a></li>
-                    <li><a href="#" hx-target="#bod" hx-post="/logout">Odhlasit</a></li>
+                    <li><a href="/profile" hx-get={"/profile/" + strconv.Itoa(client.ID) } hx-target="#bod">Profil</a></li>
+                    <li><a href="/logout" hx-target="#bod" hx-push-url="false" hx-post="/logout">Odhlasit</a></li>
                 } else {
-                    <li><a href="#" hx-put="/login" hx-target="#bod">Prihlasit sa</a></li>
-                    <li><a href="#" hx-put="/signup" hx-target="#bod">Registrovat sa</a></li>
+                    <li><a href="/login" hx-get="/login" hx-target="#bod">Prihlasit sa</a></li>
+                    <li><a href="/signup" hx-get="/signup" hx-target="#bod">Registrovat sa</a></li>
                 }
                 </ul>
                 </details>
@@ -114,8 +114,8 @@ templ NavBar(client *data.User, page int) {
                 Admin
                 </summary>
                 <ul dir="rtl">
-                    <li><a href="#" hx-target="#bod" hx-get="/users">Uzivatelia</a></li>
-                    <li><a href="#" hx-post="/shutdown">Shutdown</a></li>
+                    <li><a href="/users" hx-target="#bod" hx-get="/users">Uzivatelia</a></li>
+                    <li><a href="/shutdown" hx-post="/shutdown">Shutdown</a></li>
                     </ul>
                     </details>
                 </li>
@@ -128,7 +128,7 @@ templ NavBar(client *data.User, page int) {
 templ Page(t templ.Component, client *data.User, page int) {
     <html>
     @Header()
-    <body id="bod" hx-push-url="true">
+    <body id="bod">
         @NavBar(client, page)
         @t
     </body>

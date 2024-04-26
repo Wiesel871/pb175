@@ -7,7 +7,7 @@ templ SignUpForm(err string) {
     <div class="grid">
     <div class="container"/>
     <div class="container">
-    <form hx-target="#bod" hx-post="/signup" hx-replace-url="true" hx-push-url="true" >
+    <form hx-target="#bod" hx-post="/signup">
         <label for="name">Name</label>
         <input type="text" name="name" placeholder="Name" required></input>
 
@@ -28,7 +28,7 @@ templ LogInForm(err string) {
     <div class="grid">
     <div class="container"/>
     <div class="container">
-    <form hx-target="#bod" hx-post="/login" hx-replace-url="true" >
+    <form hx-target="#bod" hx-post="/login">
         <label for="email">Email</label>
         <input type="email" name="email" placeholder="Email" aria-label="Email" autocomplete="email" required></input>
 
@@ -42,7 +42,7 @@ templ LogInForm(err string) {
     </div>
 }
 
-templ ChangeDetails(target *data.User) {
+templ ChangeDetails(target *data.User, err string) {
     <form hx-post="/change_details" hx-encoding="multipart/form-data" hx-target="#bod">
     <input type="text" name="name" value={target.Name}></input>
     <hr/>
@@ -54,13 +54,14 @@ templ ChangeDetails(target *data.User) {
             <input type="file" name="photo"/>
         </div>
         <div>
-            <button type="submit">Vymen</button>
+            <button type="submit" >Vymen</button>
+            <div>{err}</div>
         </div>
     </div>
     </form>
 }
 
-templ Profile(target *data.User, client *data.User) {
+templ Profile(target *data.User, client *data.User, err string) {
     <div class="grid">
         <div class="container">
         if !target.HasPFP {
@@ -75,22 +76,23 @@ templ Profile(target *data.User, client *data.User) {
                 <hr/>
                 <div>{ target.Details }</div>
             } else {
-                @ChangeDetails(target)
+                @ChangeDetails(target, err)
             }
         </div>
         <div class="container">
             <div align="right" style="margin-right: 2vw;">
             <a  href="#" 
                 hx-target="#bod" 
-                hx-get={"/profile/" + strconv.Itoa(target.ID) + "/offers"} 
-                hx-replace-url="true">
+                hx-replace-url="true"
+                hx-push-url="true"
+                hx-get={"/profile/" + strconv.Itoa(target.ID) + "/offers"} >
                 Moje Ponuky
             </a>
             </div>
             if client != nil && (client.ID == target.ID || client.IsAdmin) {
                 <br/>
                 <div align="right" style="margin-right: 2vw;">
-                <a href="#" hx-target="#bod" hx-delete={"/profile/" + strconv.Itoa(target.ID)} hx-replace-url="true">Terminuj</a>
+                <a href="#" hx-target="#bod" hx-delete={"/profile/" + strconv.Itoa(target.ID)} >Terminuj</a>
                 </div>
             }
         </div>
@@ -105,15 +107,16 @@ templ Users(users data.Users, client *data.User) {
             onmouseover="this.style.borderColor='black';" 
             onmouseout="this.style.borderColor='transparent';"
             hx-trigger="click" 
+            hx-replace-url="true"
+            hx-push-url="true"
             hx-get={"/profile/" + strconv.Itoa(user.ID)} 
-            hx-target="#bod" 
-            hx-replace-url="true">
+            hx-target="#bod" >
             ID: <span>{ strconv.Itoa(user.ID) }</span>
             Name: <span>{ user.Name }</span>
             Email: <span>{ user.Email }</span>
             </div>
             <div>
-                <button hx-delete={"/profile/" + strconv.Itoa(user.ID)}>🗑</button>
+                <button hx-target="#bod" hx-delete={"/profile/" + strconv.Itoa(user.ID)}>🗑</button>
             </div>
             <div/>
         </div>

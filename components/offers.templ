@@ -5,12 +5,14 @@ import data "wiesel/pb175/database"
 
 templ Offers(offers data.Offers, owner, client *data.User) {
     <div class="grid">
+        <div/>
         <div>
-        if owner != nil && owner.ID == client.ID && len(offers) < 10 {
+        if client.ID != -1 && owner.ID == client.ID && len(offers) < 10 {
             <button 
             hx-get="/add_offer" 
-            hx-target="#bod" 
-            hx-replace-url="true">
+            hx-replace-url="true"
+            hx-push-url="true"
+            hx-target="#bod" >
             Add offer
             </button>
         }
@@ -19,6 +21,7 @@ templ Offers(offers data.Offers, owner, client *data.User) {
     </div>
     <br/>
     for _, offer := range offers {
+    <div class="container" id={"offer" + strconv.Itoa(offer.ID)}>
         <div class="grid">
             <div class="content"
             onmouseover="this.style.borderColor='white';" 
@@ -26,9 +29,10 @@ templ Offers(offers data.Offers, owner, client *data.User) {
                 <div 
                 class="grid"
                 hx-get={"/profile/" + strconv.Itoa(offer.ID_owner) +  "/offers/" + strconv.Itoa(offer.ID)} 
+                hx-replace-url="true"
+                hx-push-url="true"
                 hx-trigger="click" 
-                hx-target="#bod" 
-                hx-replace-url="true">
+                hx-target="#bod" >
                     <img 
                     src={"/images/" + strconv.Itoa(offer.ID_owner) + "/" + strconv.Itoa(offer.ID) + ".jpeg" } 
                     style="object-fit: scale-down;"
@@ -41,18 +45,30 @@ templ Offers(offers data.Offers, owner, client *data.User) {
                 <br/>
                 <hr/>
             </div>
-            if owner != nil && owner.ID == client.ID {
+            if client.ID != -1 && owner.ID == client.ID {
                 <div>
-                    <button hx-delete={"/profile/" + strconv.Itoa(offer.ID_owner) +  "/offers/" + strconv.Itoa(offer.ID)} hx-replace-url="true">🗑</button>
+                    <button 
+                    hx-target={"#offer" + strconv.Itoa(offer.ID)}
+                    hx-delete={
+                        "/profile/" + 
+                        strconv.Itoa(offer.ID_owner) +  
+                        "/offers/" + 
+                        strconv.Itoa(offer.ID)} >
+                    🗑
+                    </button>
                 </div>
             }
         </div>
         <br/>
+    </div>
     }
 }
 
-templ ChangeOffer(target *data.Offer) {
-    <form hx-post={"/change_offer/" + strconv.Itoa(target.ID)} hx-encoding="multipart/form-data" hx-target="#bod">
+templ ChangeOffer(target *data.Offer, err string) {
+    <form 
+    hx-post={"/change_offer/" + strconv.Itoa(target.ID)} 
+    hx-encoding="multipart/form-data" 
+    hx-target="#bod">
     <input type="text" name="name" value={target.Name}></input>
     <hr/>
     <textarea name="desc">{target.Description}</textarea>
@@ -60,14 +76,15 @@ templ ChangeOffer(target *data.Offer) {
         <div>
             <input type="file" name="photo"/>
         </div>
-        <div>
+        <div class="container">
             <button type="submit">Vymen</button>
+            <div>{err}</div>
         </div>
     </div>
     </form>
 }
 
-templ Offer(offer *data.Offer, owner, client *data.User) {
+templ Offer(offer *data.Offer, owner, client *data.User, err string) {
     <div class="grid">
         <div>
         <img 
@@ -80,14 +97,14 @@ templ Offer(offer *data.Offer, owner, client *data.User) {
             <div><h1>{offer.Name}</h1></div>
             <div>{ offer.Description }</div>
         } else {
-            @ChangeOffer(offer)
+            @ChangeOffer(offer, err)
         }
         </div>
         <div/>
     </div>
 }
 
-templ NewOffer(client *data.User) {
+templ NewOffer(client *data.User, err string) {
     <form 
         hx-post="/add_offer"
         hx-encoding="multipart/form-data"
@@ -104,6 +121,7 @@ templ NewOffer(client *data.User) {
                 type="submit">
                 Uloz
             </button>
+            <div>{err}</div>
         </div>
         <div/>
     </div>
