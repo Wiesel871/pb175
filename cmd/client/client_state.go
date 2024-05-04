@@ -17,12 +17,7 @@ import (
 
 func SignUp(st ut.GSP) ut.Response { 
     return func(w http.ResponseWriter, r *http.Request) {
-        ID, err := db.SmallestMissingID(st.DBH.DB, st.DBH.Users)
-        if err != nil {
-            w.WriteHeader(http.StatusInternalServerError)
-            comp.SignUpForm(err.Error()).Render(r.Context(), w)
-            return
-        }
+        ID := time.Now().Unix()
         name := r.FormValue("name")
         email := r.FormValue("email")
         password := r.FormValue("psw")
@@ -33,7 +28,7 @@ func SignUp(st ut.GSP) ut.Response {
             return
         }
 
-        err = os.Mkdir("images/" + strconv.Itoa(ID), 0755) 
+        err = os.Mkdir("images/" + strconv.FormatInt(ID, 10), 0755) 
         if err != nil {
             fmt.Println(err) 
             return
@@ -48,7 +43,7 @@ func SignUp(st ut.GSP) ut.Response {
         
 
         http.SetCookie(w, ut.NewSession(user.ID))
-        http.Redirect(w, r, "/profile/" + strconv.Itoa(user.ID), http.StatusFound)
+        http.Redirect(w, r, "/profile/" + strconv.FormatInt(user.ID, 10), http.StatusFound)
     }
 }
 
@@ -84,7 +79,7 @@ func LogIn(st ut.GSP) ut.Response {
         }
 
         http.SetCookie(w, ut.NewSession(user.ID))
-        http.Redirect(w, r, "/profile/" + strconv.Itoa(user.ID), http.StatusFound)
+        http.Redirect(w, r, "/profile/" + strconv.FormatInt(user.ID, 10), http.StatusFound)
     }
 }
 
@@ -92,9 +87,9 @@ func RedirectToUser(st ut.GSP) ut.Response {
     return func (w http.ResponseWriter, r *http.Request) {
         id := ut.GetClientID(r)
         if id == -1 {
-            http.Redirect(w, r, "/login", http.StatusMovedPermanently)
+            http.Redirect(w, r, "/login", http.StatusFound)
             return
         }
-        http.Redirect(w, r, "/profile/" + strconv.Itoa(id), http.StatusMovedPermanently)
+        http.Redirect(w, r, "/profile/" + strconv.FormatInt(id, 10), http.StatusFound)
     }
 }

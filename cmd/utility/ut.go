@@ -11,12 +11,12 @@ type Response = func(w http.ResponseWriter, r *http.Request)
 type GSP = *state.GlobalState
 
 
-func GetClientID(r *http.Request) int {
+func GetClientID(r *http.Request) int64 {
     cookie, err := r.Cookie(Session)
     if err != nil {
         return -1
     }
-    id, err := strconv.Atoi(cookie.Value)
+    id, err := strconv.ParseInt(cookie.Value, 10, 64)
     if err != nil {
         return -1
     }
@@ -29,11 +29,11 @@ const (
     CookieMaxAge   = int(SessionTimeout / time.Second)
 )
 
-func NewSession(id int) *http.Cookie {
+func NewSession(id int64) *http.Cookie {
     expiration := time.Now().Add(SessionTimeout)
     return &http.Cookie{
         Name:    Session,
-        Value:   strconv.Itoa(id),
+        Value:   strconv.FormatInt(id, 10),
         Expires: expiration,
         MaxAge:  CookieMaxAge,
         Path:    "/",
@@ -41,7 +41,7 @@ func NewSession(id int) *http.Cookie {
     }
 }
 
-func GetUser(st GSP, id int) *db.User {
+func GetUser(st GSP, id int64) *db.User {
     user, err := st.DBH.GetUserById(id)
     if err != nil {
         user = st.Anonym

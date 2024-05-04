@@ -21,7 +21,7 @@ func Profile(st ut.GSP) ut.Response {
 
         client := ut.GetUser(st, user)
 
-        id, err := strconv.Atoi(r.PathValue("id"))
+        id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 
         if err != nil {
             w.WriteHeader(404)

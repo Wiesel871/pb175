@@ -1,6 +1,7 @@
 package components
 
 import "strconv"
+import "math/rand"
 import data "wiesel/pb175/database"
 
 templ SignUpForm(err string) {
@@ -46,7 +47,7 @@ templ ChangeDetails(target *data.User, err string) {
     <form hx-post="/change_details" hx-encoding="multipart/form-data" hx-target="#bod">
     <input type="text" name="name" value={target.Name}></input>
     <hr/>
-    <textarea name="details">{target.Details}</textarea>
+    <textarea name="details" placeholder="detaily">{target.Details}</textarea>
     <hr/>
     <input type="email" name="email" value={target.Email}></input>
     <div class="grid">
@@ -67,7 +68,7 @@ templ Profile(target *data.User, client *data.User, err string) {
         if !target.HasPFP {
             <img src="/images/base_pfp.jpeg" style="object-fit: contain;"></img>
         } else {
-            <img src={ "/images/" + strconv.Itoa(target.ID) + "/pfp.jpeg" } style="object-fit: contain;"></img>
+            <img src={ "/images/" + strconv.FormatInt(target.ID, 10) + "/pfp.jpeg?" + strconv.Itoa(rand.Int()) } style="object-fit: contain;"></img>
         }
         </div>
         <div class="container" id="prof_form">
@@ -81,18 +82,11 @@ templ Profile(target *data.User, client *data.User, err string) {
         </div>
         <div class="container">
             <div align="right" style="margin-right: 2vw;">
-            <a  href="#" 
-                hx-target="#bod" 
-                hx-replace-url="true"
-                hx-push-url="true"
-                hx-get={"/profile/" + strconv.Itoa(target.ID) + "/offers"} >
-                Moje Ponuky
-            </a>
             </div>
             if client != nil && (client.ID == target.ID || client.IsAdmin) {
                 <br/>
                 <div align="right" style="margin-right: 2vw;">
-                <a href="#" hx-target="#bod" hx-delete={"/profile/" + strconv.Itoa(target.ID)} >Terminuj</a>
+                <a href="#" hx-target="#bod" hx-delete={"/profile/" + strconv.FormatInt(target.ID, 10)} >Terminuj</a>
                 </div>
             }
         </div>
@@ -109,14 +103,14 @@ templ Users(users data.Users, client *data.User) {
             hx-trigger="click" 
             hx-replace-url="true"
             hx-push-url="true"
-            hx-get={"/profile/" + strconv.Itoa(user.ID)} 
+            hx-get={"/profile/" + strconv.FormatInt(user.ID, 10)} 
             hx-target="#bod" >
-            ID: <span>{ strconv.Itoa(user.ID) }</span>
+            ID: <span>{ strconv.FormatInt(user.ID, 10) }</span>
             Name: <span>{ user.Name }</span>
             Email: <span>{ user.Email }</span>
             </div>
             <div>
-                <button hx-target="#bod" hx-delete={"/profile/" + strconv.Itoa(user.ID)}>🗑</button>
+                <button hx-target="#bod" hx-delete={"/profile/" + strconv.FormatInt(user.ID, 10)}>🗑</button>
             </div>
             <div/>
         </div>

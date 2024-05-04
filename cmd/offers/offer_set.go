@@ -22,7 +22,7 @@ func ChangeOffer(st ut.GSP) ut.Response {
             comp.Page(comp.Forbidden(), client, comp.All).Render(r.Context(), w)
         }
         of_id_str := r.PathValue("id")
-        of_id, err := strconv.Atoi(of_id_str)
+        of_id, err := strconv.ParseInt(of_id_str, 10, 64)
         if err != nil {
             w.WriteHeader(404)
             comp.Page(comp.NotFound(), client, comp.All).Render(r.Context(), w)
@@ -50,7 +50,7 @@ func ChangeOffer(st ut.GSP) ut.Response {
         if err == nil {
             defer file.Close()
 
-            path := "images/" + strconv.Itoa(id) + "/" + of_id_str + ".jpeg"
+            path := "images/" + strconv.FormatInt(id, 10) + "/" + of_id_str + ".jpeg"
             f, err := os.OpenFile(
                 path,
                 os.O_WRONLY | os.O_CREATE,

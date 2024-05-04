@@ -1,40 +1,28 @@
 package components
 
 import "strconv"
+import "math/rand"
 import data "wiesel/pb175/database"
 
-templ Offers(offers data.Offers, owner, client *data.User) {
-    <div class="grid">
-        <div/>
-        <div>
-        if client.ID != -1 && owner.ID == client.ID && len(offers) < 10 {
-            <button 
-            hx-get="/add_offer" 
-            hx-replace-url="true"
-            hx-push-url="true"
-            hx-target="#bod" >
-            Add offer
-            </button>
-        }
-        </div>
-        <div/>
-    </div>
+templ RangeOffers(offers *data.Offers, client, owner *data.User, salt string) {
+    for _, offer := range *offers {
     <br/>
-    for _, offer := range offers {
-    <div class="container" id={"offer" + strconv.Itoa(offer.ID)}>
-        <div class="grid">
+        <div class="grid" id={"offer" + strconv.FormatInt(offer.ID, 10)}>
             <div class="content"
             onmouseover="this.style.borderColor='white';" 
             onmouseout="this.style.borderColor='transparent';">
                 <div 
                 class="grid"
-                hx-get={"/profile/" + strconv.Itoa(offer.ID_owner) +  "/offers/" + strconv.Itoa(offer.ID)} 
+                hx-get={"/profile/" + strconv.FormatInt(offer.ID_owner, 10) +  "/offers/" + strconv.FormatInt(offer.ID, 10)} 
                 hx-replace-url="true"
                 hx-push-url="true"
                 hx-trigger="click" 
                 hx-target="#bod" >
                     <img 
-                    src={"/images/" + strconv.Itoa(offer.ID_owner) + "/" + strconv.Itoa(offer.ID) + ".jpeg" } 
+                    src={
+                        "/images/" + 
+                        strconv.FormatInt(offer.ID_owner, 10) + 
+                        "/" + strconv.FormatInt(offer.ID, 10) + ".jpeg" + salt}
                     style="object-fit: scale-down;"
                     />
                     <div class="container">
@@ -48,25 +36,79 @@ templ Offers(offers data.Offers, owner, client *data.User) {
             if client.ID != -1 && owner.ID == client.ID {
                 <div>
                     <button 
-                    hx-target={"#offer" + strconv.Itoa(offer.ID)}
+                    hx-target={"#offer" + strconv.FormatInt(offer.ID, 10)}
                     hx-delete={
                         "/profile/" + 
-                        strconv.Itoa(offer.ID_owner) +  
+                        strconv.FormatInt(offer.ID_owner, 10) +  
                         "/offers/" + 
-                        strconv.Itoa(offer.ID)} >
+                        strconv.FormatInt(offer.ID, 10)} >
                     🗑
                     </button>
                 </div>
             }
         </div>
-        <br/>
-    </div>
     }
+
+}
+
+
+templ SortsAndOffers(offers *data.Offers, owner, client *data.User, by, sc, filter, salt string) {
+    <div class="grid">
+        <details class="dropdown">
+        <summary>Zorad podla</summary>
+        <ul>
+        <li><a class="link" hx-get={"/offers/ID/ASC/" + filter} hx-target="#bod">Datum pridania ↑</a></li>
+        <li><a class="link" hx-get={"/offers/ID/DESC/" + filter} hx-target="#bod">Datum pridania ↓</a></li>
+        <li><a class="link" hx-get={"/offers/ID_owner/ASC/" + filter} hx-target="#bod">Autor ↑</a></li>
+        <li><a class="link" hx-get={"/offers/ID_owner/DESC/" + filter} hx-target="#bod">Autor ↓</a></li>
+        <li><a class="link" hx-get={"/offers/Name/ASC/" + filter} hx-target="#bod">Nazov ↑</a></li>
+        <li><a class="link" hx-get={"/offers/Name/DESC/" + filter} hx-target="#bod">Nazov ↓</a></li>
+        </ul>
+        </details>
+        <div/>
+    </div>
+    @RangeOffers(offers, client, owner, salt)
+}
+
+templ Offers(offers *data.Offers, owner, client *data.User, by, sc, filter string) {
+    <div class="grid">
+        <div class="container">
+            <form
+            hx-post={"/offers/" + by + "/" + sc}
+            hx-target="#offers" 
+            hx-trigger="input"
+            hx-indicator=".loading">
+            <input 
+            style="margin-left: 5%;"
+            type="search"
+            name="filter"
+            placeholder="Vyhladaj"
+            aria-label="Search"
+            value={filter}/>
+            </form>
+
+        </div>
+        if client.ID != -1 && owner.ID == client.ID && len(*offers) < 10 {
+        <div class="container">
+            <button 
+            hx-get="/add_offer" 
+            hx-replace-url="true"
+            hx-push-url="true"
+            hx-target="#bod" >
+            Add offer
+            </button>
+        </div>
+        }
+        <div/>
+    </div>
+    <div class="container" id="offers">
+    @SortsAndOffers(offers, owner, client, by, sc, filter, "?" + strconv.Itoa(rand.Int())) 
+    </div>
 }
 
 templ ChangeOffer(target *data.Offer, err string) {
     <form 
-    hx-post={"/change_offer/" + strconv.Itoa(target.ID)} 
+    hx-post={"/change_offer/" + strconv.FormatInt(target.ID, 10)} 
     hx-encoding="multipart/form-data" 
     hx-target="#bod">
     <input type="text" name="name" value={target.Name}></input>
@@ -88,7 +130,7 @@ templ Offer(offer *data.Offer, owner, client *data.User, err string) {
     <div class="grid">
         <div>
         <img 
-        src={"/images/" + strconv.Itoa(offer.ID_owner) + "/" + strconv.Itoa(offer.ID) + ".jpeg" } 
+        src={"/images/" + strconv.FormatInt(offer.ID_owner, 10) + "/" + strconv.FormatInt(offer.ID, 10) + ".jpeg" } 
         style="object-fit: contain;"/>
         </div>
 

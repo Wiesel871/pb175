@@ -53,6 +53,9 @@ func SetupUserHandler(mux *http.ServeMux, st *st.GlobalState) {
     fs := http.FileServer(http.Dir("images"))
     mux.HandleFunc("GET /images/", http.StripPrefix("/images/", fs).ServeHTTP)
 
+    fs = http.FileServer(http.Dir("scripts"))
+    mux.HandleFunc("GET /scripts/", http.StripPrefix("/scripts/", fs).ServeHTTP)
+
     mux.HandleFunc("POST /logout", ct.LogOut)
 
     mux.HandleFunc("GET /signup", ct.SignUpForm(st))
@@ -72,6 +75,9 @@ func SetupUserHandler(mux *http.ServeMux, st *st.GlobalState) {
     mux.HandleFunc("GET /profile/{id_owner}/offers/{id}", of.GetOffer(st))
 
     mux.HandleFunc("GET /offers", of.GetOffers(st))
+    mux.HandleFunc("GET /offers/{by}/{sc}/", of.GetOffers(st))
+    mux.HandleFunc("GET /offers/{by}/{sc}/{fil}", of.GetOffers(st))
+    mux.HandleFunc("POST /offers/{by}/{sc}", of.FilterOffers(st))
 
     mux.HandleFunc("GET /add_offer", of.AddOffer(st))
     mux.HandleFunc("POST /add_offer", of.UploadOffer(st))

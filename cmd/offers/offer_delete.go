@@ -17,7 +17,7 @@ func DeleteOffer(st ut.GSP) ut.Response {
 
         owner_id_str := r.PathValue("owner")
         id_str := r.PathValue("id")
-        owner_id, err := strconv.Atoi(owner_id_str)
+        owner_id, err := strconv.ParseInt(owner_id_str, 10, 64)
         if err != nil {
             w.WriteHeader(http.StatusNotFound)
             comp.Page(comp.NotFound(), client, comp.All).Render(r.Context(), w)
@@ -30,7 +30,7 @@ func DeleteOffer(st ut.GSP) ut.Response {
             return
         }
 
-        id, err := strconv.Atoi(id_str)
+        id, err := strconv.ParseInt(id_str, 10, 64)
         if err != nil {
             w.WriteHeader(http.StatusNotFound)
             comp.Page(comp.NotFound(), client, comp.All).Render(r.Context(), w)

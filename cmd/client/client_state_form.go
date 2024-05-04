@@ -14,7 +14,7 @@ func SignUpForm(st ut.GSP) ut.Response {
         id := ut.GetClientID(r)
         if id > -1 {
             http.SetCookie(w, ut.NewSession(id))
-            http.Redirect(w, r, "/home", http.StatusMovedPermanently)
+            http.Redirect(w, r, "/home", http.StatusFound)
             println("already signed up")
             return
         }
@@ -27,7 +27,7 @@ func LogInForm(st ut.GSP) ut.Response {
         id := ut.GetClientID(r)
         if id > -1 {
             http.SetCookie(w, ut.NewSession(id))
-            http.Redirect(w, r, "/home", http.StatusMovedPermanently)
+            http.Redirect(w, r, "/home", http.StatusFound)
             println("already signed up")
             return
         }

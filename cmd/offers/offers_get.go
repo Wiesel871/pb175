@@ -19,7 +19,7 @@ func GetUserOffers(st ut.GSP) ut.Response {
 
         client := ut.GetUser(st, user)
 
-        id, err := strconv.Atoi(r.PathValue("id"))
+        id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
         if err != nil {
             w.WriteHeader(404)
             comp.Page(comp.NotFound(), client, comp.All).Render(r.Context(), w)
@@ -40,7 +40,7 @@ func GetUserOffers(st ut.GSP) ut.Response {
             return
         }
         comp.Page(
-            comp.Offers(offers, owner, client), 
+            comp.Offers(&offers, owner, client, "", "", ""), 
             client, 
             comp.All,
         ).Render(r.Context(), w)
@@ -56,14 +56,14 @@ func GetOffer(st ut.GSP) ut.Response {
 
         client := ut.GetUser(st, user)
 
-        id_owner, err := strconv.Atoi(r.PathValue("id_owner"))
+        id_owner, err := strconv.ParseInt(r.PathValue("id_owner"), 10, 64)
         if err != nil {
             w.WriteHeader(404)
             comp.Page(comp.NotFound(), client, comp.All).Render(r.Context(), w)
             return
         }
 
-        id, err := strconv.Atoi(r.PathValue("id"))
+        id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
         if err != nil {
             w.WriteHeader(404)
             comp.Page(comp.NotFound(), client, comp.All).Render(r.Context(), w)
@@ -88,10 +88,40 @@ func GetOffer(st ut.GSP) ut.Response {
     }
 }
 
+func FilterOffers(st ut.GSP) ut.Response {
+    return func(w http.ResponseWriter, r *http.Request) {
+        by := r.PathValue("by")
+        if by == "" {
+            by = "ID"
+        }
+        sc := r.PathValue("sc")
+        if sc == "" {
+            sc = "DESC"
+        }
+        fil := r.FormValue("filter")
+        offers, _ := st.DBH.GetOffers(by, sc, fil)
+        id := ut.GetClientID(r)
+        if id > -1 {
+            http.SetCookie(w, ut.NewSession(id))
+        }
+        client := ut.GetUser(st, id)
+
+        comp.SortsAndOffers(&offers, st.Anonym, client, by, sc, fil, "").Render(r.Context(), w)
+    }
+}
 
 func GetOffers(st ut.GSP) ut.Response {
     return func (w http.ResponseWriter, r *http.Request) {
-        offers, _ := st.DBH.GetOffers()
+        by := r.PathValue("by")
+        if by == "" {
+            by = "ID"
+        }
+        sc := r.PathValue("sc")
+        if sc == "" {
+            sc = "DESC"
+        }
+        fil := r.PathValue("fil")
+        offers, _ := st.DBH.GetOffers(by, sc, fil)
         id := ut.GetClientID(r)
         if id > -1 {
             http.SetCookie(w, ut.NewSession(id))
@@ -99,7 +129,7 @@ func GetOffers(st ut.GSP) ut.Response {
         client := ut.GetUser(st, id)
 
         comp.Page(
-            comp.Offers(offers, st.Anonym, client), 
+            comp.Offers(&offers, st.Anonym, client, by, sc, fil), 
             client, 
             comp.OffersN,
         ).Render(r.Context(), w)

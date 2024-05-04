@@ -47,7 +47,7 @@ func ChangeDetails(st ut.GSP) ut.Response {
             defer file.Close()
             println("got a file")
 
-            path := "images/" + strconv.Itoa(id) + "/pfp.jpeg"
+            path := "images/" + strconv.FormatInt(id, 10) + "/pfp.jpeg"
             f, err := os.OpenFile(
                 path,
                 os.O_WRONLY | os.O_CREATE,
@@ -75,7 +75,6 @@ func ChangeDetails(st ut.GSP) ut.Response {
             fmt.Printf("err: %v\n", err)
         }
 
-        w.Header().Set("HX-Refresh", "true")
-        comp.Page(comp.Profile(client, client, ""), client, comp.All).Render(r.Context(), w)
+        http.Redirect(w, r, "/profile/" + strconv.FormatInt(id, 10), http.StatusFound)
     }
 }

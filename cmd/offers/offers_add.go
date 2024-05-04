@@ -2,10 +2,11 @@ package offers
 
 import (
 	"fmt"
-    "io"
+	"io"
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	ut "wiesel/pb175/cmd/utility"
 	comp "wiesel/pb175/components"
@@ -27,7 +28,6 @@ func AddOffer(st ut.GSP) ut.Response {
 
 func UploadOffer(st ut.GSP) ut.Response {
     return func (w http.ResponseWriter, r *http.Request) {
-        println("got upload post")
         id := ut.GetClientID(r)
         client := ut.GetUser(st, id)
         if id == -1 {
@@ -40,10 +40,10 @@ func UploadOffer(st ut.GSP) ut.Response {
         name := r.FormValue("name")
         desc := r.FormValue("description")
 
-        of_id, err := db.SmallestMissingID(st.DBH.DB, st.DBH.Offers)
+        of_id := time.Now().Unix()
         offer := db.NewOffer(of_id, id, name, desc)
 
-        err = r.ParseMultipartForm(10 << 20) 
+        err := r.ParseMultipartForm(10 << 20) 
         if err != nil {
             return
         }
@@ -56,7 +56,7 @@ func UploadOffer(st ut.GSP) ut.Response {
         }
         defer file.Close()
 
-        path := "images/" + strconv.Itoa(id) + "/" + strconv.Itoa(of_id) + ".jpeg"
+        path := "images/" + strconv.FormatInt(id, 10) + "/" + strconv.FormatInt(of_id, 10) + ".jpeg"
         f, err := os.OpenFile(
             path,
             os.O_WRONLY | os.O_CREATE,
@@ -79,6 +79,6 @@ func UploadOffer(st ut.GSP) ut.Response {
             http.Error(w, err.Error(), http.StatusInternalServerError)
             return
         }
-        http.Redirect(w, r, "/profile/" + strconv.Itoa(id) + "/offers", http.StatusMovedPermanently)
+        http.Redirect(w, r, "/profile/" + strconv.FormatInt(id, 10) + "/offers", http.StatusFound)
     }
 }

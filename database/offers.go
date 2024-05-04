@@ -8,8 +8,8 @@ import (
 )
 
 type Offer struct {
-    ID int
-    ID_owner int
+    ID int64
+    ID_owner int64
     Name string
     Description string
 }
@@ -17,7 +17,7 @@ type Offer struct {
 
 type Offers = []Offer
 
-func NewOffer(id, id_owner int, name, desc string) (*Offer) {
+func NewOffer(id, id_owner int64, name, desc string) (*Offer) {
     return &Offer{
         ID: id,
         ID_owner: id_owner,
@@ -34,8 +34,8 @@ func (dbh *DBHandler) InsertOffer(of *Offer) error {
     return err
 }
 
-func (dbh *DBHandler) GetOffers() (Offers, error) {
-    rows, err := dbh.DB.Query("SELECT * FROM " + dbh.Offers)
+func (dbh *DBHandler) GetOffers(by, sc, fil string) (Offers, error) {
+    rows, err := dbh.DB.Query("SELECT * FROM " + dbh.Offers + " WHERE Name LIKE '%" + fil + "%' COLLATE NOCASE ORDER BY " + by + " " + sc)
     if err != nil {
         fmt.Printf("get err.Error(): %v\n", err.Error())
         return nil, err
@@ -51,7 +51,7 @@ func (dbh *DBHandler) GetOffers() (Offers, error) {
 	return offers, nil
 }
 
-func (dbh *DBHandler) GetOffersByOwner(id int) (Offers, error) {
+func (dbh *DBHandler) GetOffersByOwner(id int64) (Offers, error) {
     rows, err := dbh.DB.Query("SELECT * FROM " + dbh.Offers + " WHERE ID_owner = ?", id)
     if err != nil {
         fmt.Printf("get err.Error(): %v\n", err.Error())
@@ -68,7 +68,7 @@ func (dbh *DBHandler) GetOffersByOwner(id int) (Offers, error) {
 	return offers, nil
 }
 
-func (dbh *DBHandler) GetOfferById(id int) (*Offer, error) {
+func (dbh *DBHandler) GetOfferById(id int64) (*Offer, error) {
     row := dbh.DB.QueryRow("SELECT * FROM " + dbh.Offers + " WHERE ID = ?", id)
     var offer = new(Offer)
     if err := row.Scan(&offer.ID, &offer.ID_owner, &offer.Name, &offer.Description); err != nil {
@@ -86,7 +86,7 @@ func (dbh *DBHandler) AdjustOffer(o *Offer, name, desc string) error {
     return err
 }
 
-func (dbh *DBHandler) DeleteOffer(id int) error {
+func (dbh *DBHandler) DeleteOffer(id int64) error {
     _, err := dbh.DB.Exec(`
     DELETE FROM ` + dbh.Offers + `
     WHERE ID = ?
