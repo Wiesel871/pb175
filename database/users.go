@@ -9,7 +9,7 @@ import (
 )
 
 type User struct {
-    ID int
+    ID int64
     Name string
     Email string
     Password []byte
@@ -36,7 +36,7 @@ func CheckPasswordHash(password string, hash []byte) error {
 
 
 /* Creates new user struct from parameters */
-func NewUser(id int, name string, email string, password string) (*User, error) {
+func NewUser(id int64, name string, email string, password string) (*User, error) {
     hashedPassword, error := HashPassword(password)
     if error != nil {
         return nil, error
@@ -53,11 +53,11 @@ func (dbh *DBHandler) InsertUser(con *User) error {
     _, err := dbh.DB.Exec(`
     INSERT INTO ` + dbh.Users + ` (ID, Name, Email, Password, Details, HasPFP, IsAdmin) 
     VALUES (?, ?, ?, ?, ?, ?, ?)`, 
-    con.ID, con.Name, con.Email, con.Password, "<empty>", false, false)
+    con.ID, con.Name, con.Email, con.Password, "", false, false)
     return err
 }
 
-func (dbh *DBHandler) GetUserById(id int) (*User, error) {
+func (dbh *DBHandler) GetUserById(id int64) (*User, error) {
     row := dbh.DB.QueryRow("SELECT * FROM " + dbh.Users + " WHERE ID = ?", id)
     var u = new(User)
     if err := row.Scan(&u.ID, &u.Name, &u.Email, &u.Password, &u.Details, &u.HasPFP, &u.IsAdmin); err != nil {
@@ -103,7 +103,7 @@ func (dbh *DBHandler) AdjustUser(u *User, name, email, details string, hasPFP bo
     return err
 }
 
-func (dbh *DBHandler) DeleteUser(id int) error {
+func (dbh *DBHandler) DeleteUser(id int64) error {
     tx, err := dbh.DB.Begin()
     if err != nil {
         return err

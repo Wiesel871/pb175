@@ -13,26 +13,10 @@ type DBHandler struct {
     Offers string
 }
 
-func SmallestMissingID(db *sql.DB, table string) (int, error) {
-    var res int
-    err := db.QueryRow(`
-    SELECT MIN(ID) + 1 
-    FROM ` + table + ` t1
-    WHERE NOT EXISTS (
-        SELECT 1 FROM ` + table + ` t2
-        WHERE ID = t1.ID + 1
-    )
-    `).Scan(&res)
-    if err != nil {
-        return 0, err
-    }
-    return res, nil
-}
-
-func InitDB() (*DBHandler, error) {
+func InitDB(dbn string) (*DBHandler, error) {
     res := new(DBHandler)
 	var err error
-    db, err := sql.Open("sqlite3", "bazos.db")
+    db, err := sql.Open("sqlite3", dbn)
 	if err != nil {
         fmt.Printf("open err.Error(): %v\n", err.Error())
 		return nil, err

@@ -10,20 +10,20 @@ import (
 	"syscall"
 	"time"
 
+	cmd "wiesel/pb175/cmd"
 	_ "wiesel/pb175/components"
 	data "wiesel/pb175/database"
-	cmd "wiesel/pb175/cmd"
-    state "wiesel/pb175/state"
+	state "wiesel/pb175/state"
 
 	_ "github.com/a-h/templ"
-
 )
 
 func main() {
-    dbh, err := data.InitDB()
+    dbh, err := data.InitDB("bazos.db")
     if err != nil {
         return
     }
+
 
     anonym := data.User{
         ID: -1,
@@ -41,33 +41,14 @@ func main() {
     mux := http.NewServeMux()
     cmd.SetupUserHandler(mux, &st)
     st.SRV = &http.Server {
-        Addr: ":8080",
+        Addr: ":8090",
         Handler: mux,
         ErrorLog: log.Default(),
     }
 
-    users, err := st.DBH.GetUsers()
-    if err != nil {
-        fmt.Printf("get users: %v\n", err)
-        return
-    }
-    fmt.Printf("%s:\n", dbh.Users)
-    for i := range len(users) {
-        fmt.Printf("user: %v\n", users[i])
-    }
-    offers, err := st.DBH.GetOffers()
-    if err != nil {
-        fmt.Printf("get offers: %v\n", err)
-        return
-    }
-    fmt.Printf("%s:\n", dbh.Offers)
-    for i := range len(offers) {
-        fmt.Printf("offer: %v\n", offers[i])
-    }
-
 
     if len(os.Args) > 1 {
-        id, _ := data.SmallestMissingID(st.DBH.DB, st.DBH.Users)
+        id := int64(0)
         admin, _ := data.NewUser(id, os.Args[1], os.Args[2], os.Args[3])
         admin.IsAdmin = true
         st.DBH.InsertUser(admin)
