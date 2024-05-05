@@ -13,7 +13,7 @@ templ RangeOffers(offers *data.Offers, client, owner *data.User, salt string) {
             onmouseout="this.style.borderColor='transparent';">
                 <div 
                 class="grid"
-                hx-get={"/profile/" + strconv.FormatInt(offer.ID_owner, 10) +  "/offers/" + strconv.FormatInt(offer.ID, 10)} 
+                hx-get={"/profile/" + strconv.FormatInt(offer.OwnerID, 10) +  "/offers/" + strconv.FormatInt(offer.ID, 10)} 
                 hx-replace-url="true"
                 hx-push-url="true"
                 hx-trigger="click" 
@@ -21,7 +21,7 @@ templ RangeOffers(offers *data.Offers, client, owner *data.User, salt string) {
                     <img 
                     src={
                         "/images/" + 
-                        strconv.FormatInt(offer.ID_owner, 10) + 
+                        strconv.FormatInt(offer.OwnerID, 10) + 
                         "/" + strconv.FormatInt(offer.ID, 10) + ".jpeg" + salt}
                     style="object-fit: scale-down;"
                     />
@@ -39,7 +39,7 @@ templ RangeOffers(offers *data.Offers, client, owner *data.User, salt string) {
                     hx-target={"#offer" + strconv.FormatInt(offer.ID, 10)}
                     hx-delete={
                         "/profile/" + 
-                        strconv.FormatInt(offer.ID_owner, 10) +  
+                        strconv.FormatInt(offer.OwnerID, 10) +  
                         "/offers/" + 
                         strconv.FormatInt(offer.ID, 10)} >
                     🗑
@@ -59,8 +59,8 @@ templ SortsAndOffers(offers *data.Offers, owner, client *data.User, by, sc, filt
         <ul>
         <li><a class="link" hx-get={"/offers/ID/ASC/" + filter} hx-target="#bod">Datum pridania ↑</a></li>
         <li><a class="link" hx-get={"/offers/ID/DESC/" + filter} hx-target="#bod">Datum pridania ↓</a></li>
-        <li><a class="link" hx-get={"/offers/ID_owner/ASC/" + filter} hx-target="#bod">Autor ↑</a></li>
-        <li><a class="link" hx-get={"/offers/ID_owner/DESC/" + filter} hx-target="#bod">Autor ↓</a></li>
+        <li><a class="link" hx-get={"/offers/OwnerID/ASC/" + filter} hx-target="#bod">Autor ↑</a></li>
+        <li><a class="link" hx-get={"/offers/OwnerID/DESC/" + filter} hx-target="#bod">Autor ↓</a></li>
         <li><a class="link" hx-get={"/offers/Name/ASC/" + filter} hx-target="#bod">Nazov ↑</a></li>
         <li><a class="link" hx-get={"/offers/Name/DESC/" + filter} hx-target="#bod">Nazov ↓</a></li>
         </ul>
@@ -130,7 +130,7 @@ templ Offer(offer *data.Offer, owner, client *data.User, err string) {
     <div class="grid">
         <div>
         <img 
-        src={"/images/" + strconv.FormatInt(offer.ID_owner, 10) + "/" + strconv.FormatInt(offer.ID, 10) + ".jpeg" } 
+        src={"/images/" + strconv.FormatInt(offer.OwnerID, 10) + "/" + strconv.FormatInt(offer.ID, 10) + ".jpeg" } 
         style="object-fit: contain;"/>
         </div>
 

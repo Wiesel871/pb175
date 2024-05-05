@@ -13,7 +13,7 @@ import (
 	cmd "wiesel/pb175/cmd"
 	_ "wiesel/pb175/components"
 	data "wiesel/pb175/database"
-	state "wiesel/pb175/state"
+	gst "wiesel/pb175/state"
 
 	_ "github.com/a-h/templ"
 )
@@ -25,17 +25,9 @@ func main() {
     }
 
 
-    anonym := data.User{
-        ID: -1,
-        Name: "",
-        Email: "",
-        Password: []byte(""),
-        IsAdmin: false,
-        HasPFP: false,
-    }
-    st := state.GlobalState {
+    st := gst.GlobalState {
         DBH: dbh,
-        Anonym: &anonym,
+        Anonym: gst.GetAnonym(),
     }
 
     mux := http.NewServeMux()

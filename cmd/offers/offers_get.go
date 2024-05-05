@@ -21,14 +21,14 @@ func GetUserOffers(st ut.GSP) ut.Response {
 
         id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
         if err != nil {
-            w.WriteHeader(404)
+            w.WriteHeader(http.StatusNotFound)
             comp.Page(comp.NotFound(), client, comp.All).Render(r.Context(), w)
             println("wrong id in path")
             return
         }
         owner, err := st.DBH.GetUserById(id)
         if err != nil {
-            w.WriteHeader(404)
+            w.WriteHeader(http.StatusNotFound)
             comp.Page(comp.NotFound(), client, comp.All).Render(r.Context(), w)
             println("wrong user")
             return
@@ -58,29 +58,29 @@ func GetOffer(st ut.GSP) ut.Response {
 
         id_owner, err := strconv.ParseInt(r.PathValue("id_owner"), 10, 64)
         if err != nil {
-            w.WriteHeader(404)
+            w.WriteHeader(http.StatusNotFound)
             comp.Page(comp.NotFound(), client, comp.All).Render(r.Context(), w)
             return
         }
 
         id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
         if err != nil {
-            w.WriteHeader(404)
+            w.WriteHeader(http.StatusNotFound)
             comp.Page(comp.NotFound(), client, comp.All).Render(r.Context(), w)
             return
         }
 
         owner, err := st.DBH.GetUserById(id_owner)
         if err != nil {
-            w.WriteHeader(404)
+            w.WriteHeader(http.StatusNotFound)
             comp.Page(comp.NotFound(), client, comp.All).Render(r.Context(), w)
             return
         }
 
 
         offer, err := st.DBH.GetOfferById(id)
-        if err != nil || offer.ID_owner != id_owner {
-            w.WriteHeader(404)
+        if err != nil || offer.OwnerID != id_owner {
+            w.WriteHeader(http.StatusNotFound)
             comp.Page(comp.NotFound(), client, comp.All).Render(r.Context(), w)
             return
         }

@@ -18,7 +18,7 @@ func AddOffer(st ut.GSP) ut.Response {
         id := ut.GetClientID(r)
         client := ut.GetUser(st, id)
         if client.ID < 0 {
-            w.WriteHeader(403)
+            w.WriteHeader(http.StatusForbidden)
             comp.Page(comp.Forbidden(), client, comp.All).Render(r.Context(), w)
             return
         }
@@ -31,7 +31,7 @@ func UploadOffer(st ut.GSP) ut.Response {
         id := ut.GetClientID(r)
         client := ut.GetUser(st, id)
         if id == -1 {
-            w.WriteHeader(403)
+            w.WriteHeader(http.StatusForbidden)
             println("invalid id")
             comp.Page(comp.Forbidden(), client, comp.All).Render(r.Context(), w)
             return
@@ -40,7 +40,7 @@ func UploadOffer(st ut.GSP) ut.Response {
         name := r.FormValue("name")
         desc := r.FormValue("description")
 
-        of_id := time.Now().Unix()
+        of_id := (id << 32) + time.Now().Unix()
         offer := db.NewOffer(of_id, id, name, desc)
 
         err := r.ParseMultipartForm(10 << 20) 
@@ -50,7 +50,7 @@ func UploadOffer(st ut.GSP) ut.Response {
 
         file, _, err := r.FormFile("photo")
         if err != nil {
-            w.WriteHeader(400)
+            w.WriteHeader(http.StatusUnprocessableEntity)
             comp.Offer(offer, client, client, "photo missing").Render(r.Context(), w)
             return
         }

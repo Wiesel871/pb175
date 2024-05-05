@@ -9,21 +9,21 @@ import (
 )
 
 type User struct {
-    ID int64
-    Name string
-    Email string
-    Password []byte
-    Details string
-    HasPFP bool
-    IsAdmin bool
+    ID          int64
+    Name        string
+    Email       string
+    Password    []byte
+    Details     string
+    HasPFP      bool
+    IsAdmin     bool
 }
 
 type Users = []User
 
 
-/* Hashes given password */
 func HashPassword(password string) ([]byte, error) {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword(
+        []byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,6 @@ func CheckPasswordHash(password string, hash []byte) error {
 }
 
 
-/* Creates new user struct from parameters */
 func NewUser(id int64, name string, email string, password string) (*User, error) {
     hashedPassword, error := HashPassword(password)
     if error != nil {
@@ -51,7 +50,8 @@ func NewUser(id int64, name string, email string, password string) (*User, error
 
 func (dbh *DBHandler) InsertUser(con *User) error {
     _, err := dbh.DB.Exec(`
-    INSERT INTO ` + dbh.Users + ` (ID, Name, Email, Password, Details, HasPFP, IsAdmin) 
+    INSERT INTO ` + dbh.Users + ` 
+    (ID, Name, Email, Password, Details, HasPFP, IsAdmin) 
     VALUES (?, ?, ?, ?, ?, ?, ?)`, 
     con.ID, con.Name, con.Email, con.Password, "", false, false)
     return err
@@ -60,7 +60,10 @@ func (dbh *DBHandler) InsertUser(con *User) error {
 func (dbh *DBHandler) GetUserById(id int64) (*User, error) {
     row := dbh.DB.QueryRow("SELECT * FROM " + dbh.Users + " WHERE ID = ?", id)
     var u = new(User)
-    if err := row.Scan(&u.ID, &u.Name, &u.Email, &u.Password, &u.Details, &u.HasPFP, &u.IsAdmin); err != nil {
+    if err := row.Scan(
+        &u.ID, &u.Name, &u.Email, &u.Password, 
+        &u.Details, &u.HasPFP, &u.IsAdmin); 
+    err != nil {
         return nil, err
     }
     return u, nil
@@ -69,7 +72,10 @@ func (dbh *DBHandler) GetUserById(id int64) (*User, error) {
 func (dbh *DBHandler) GetUserByEmail(email string) (*User, error) {
     row := dbh.DB.QueryRow("SELECT * FROM " + dbh.Users + " WHERE Email = ?", email)
     var u = new(User)
-    if err := row.Scan(&u.ID, &u.Name, &u.Email, &u.Password, &u.Details, &u.HasPFP, &u.IsAdmin); err != nil {
+    if err := row.Scan(
+        &u.ID, &u.Name, &u.Email, &u.Password, 
+        &u.Details, &u.HasPFP, &u.IsAdmin); 
+    err != nil {
         return nil, err
     }
     return u, nil
@@ -86,7 +92,10 @@ func (dbh *DBHandler) GetUsers() (Users, error) {
 	var users Users
 	for rows.Next() {
 		var user User
-        if err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Details, &user.HasPFP, &user.IsAdmin); err != nil {
+        if err := rows.Scan(
+            &user.ID, &user.Name, &user.Email, 
+            &user.Password, &user.Details, &user.HasPFP, &user.IsAdmin);
+        err != nil {
             return nil, err
         }
 		users = append(users, user)
@@ -94,7 +103,9 @@ func (dbh *DBHandler) GetUsers() (Users, error) {
 	return users, nil
 }
 
-func (dbh *DBHandler) AdjustUser(u *User, name, email, details string, hasPFP bool) error {
+func (dbh *DBHandler) AdjustUser(
+    u *User, name, email, 
+    details string, hasPFP bool) error {
     _, err := dbh.DB.Exec(`
     UPDATE ` + dbh.Users + ` 
     SET Name = ?, Email = ?, Password = ?, Details = ?, HasPFP = ?

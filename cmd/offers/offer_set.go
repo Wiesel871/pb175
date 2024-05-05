@@ -18,13 +18,13 @@ func ChangeOffer(st ut.GSP) ut.Response {
 
         client, err := st.DBH.GetUserById(id)
         if err != nil {
-            w.WriteHeader(403)
+            w.WriteHeader(http.StatusForbidden)
             comp.Page(comp.Forbidden(), client, comp.All).Render(r.Context(), w)
         }
         of_id_str := r.PathValue("id")
         of_id, err := strconv.ParseInt(of_id_str, 10, 64)
         if err != nil {
-            w.WriteHeader(404)
+            w.WriteHeader(http.StatusNotFound)
             comp.Page(comp.NotFound(), client, comp.All).Render(r.Context(), w)
         }
 
@@ -33,7 +33,7 @@ func ChangeOffer(st ut.GSP) ut.Response {
 
         offer, err := st.DBH.GetOfferById(of_id)
         if err != nil {
-            w.WriteHeader(404)
+            w.WriteHeader(http.StatusNotFound)
             comp.Page(comp.NotFound(), client, comp.All).Render(r.Context(), w)
         }
 

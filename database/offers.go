@@ -8,9 +8,9 @@ import (
 )
 
 type Offer struct {
-    ID int64
-    ID_owner int64
-    Name string
+    ID          int64
+    OwnerID    int64
+    Name        string
     Description string
 }
 
@@ -20,7 +20,7 @@ type Offers = []Offer
 func NewOffer(id, id_owner int64, name, desc string) (*Offer) {
     return &Offer{
         ID: id,
-        ID_owner: id_owner,
+        OwnerID: id_owner,
         Name: name,
         Description: desc,
     }
@@ -30,7 +30,7 @@ func (dbh *DBHandler) InsertOffer(of *Offer) error {
     _, err := dbh.DB.Exec(`
     INSERT INTO Offers (ID, ID_owner, Name, Description) 
     VALUES (?, ?, ?, ?)`, 
-    of.ID, of.ID_owner, of.Name, of.Description)
+    of.ID, of.OwnerID, of.Name, of.Description)
     return err
 }
 
@@ -45,7 +45,7 @@ func (dbh *DBHandler) GetOffers(by, sc, fil string) (Offers, error) {
 	var offers Offers
 	for rows.Next() {
 		var offer Offer
-        _ = rows.Scan(&offer.ID, &offer.ID_owner, &offer.Name, &offer.Description)
+        _ = rows.Scan(&offer.ID, &offer.OwnerID, &offer.Name, &offer.Description)
 		offers = append(offers, offer)
 	}
 	return offers, nil
@@ -62,7 +62,7 @@ func (dbh *DBHandler) GetOffersByOwner(id int64) (Offers, error) {
 	var offers Offers
 	for rows.Next() {
 		var offer Offer
-		rows.Scan(&offer.ID, &offer.ID_owner, &offer.Name, &offer.Description)
+		rows.Scan(&offer.ID, &offer.OwnerID, &offer.Name, &offer.Description)
 		offers = append(offers, offer)
 	}
 	return offers, nil
@@ -71,7 +71,7 @@ func (dbh *DBHandler) GetOffersByOwner(id int64) (Offers, error) {
 func (dbh *DBHandler) GetOfferById(id int64) (*Offer, error) {
     row := dbh.DB.QueryRow("SELECT * FROM " + dbh.Offers + " WHERE ID = ?", id)
     var offer = new(Offer)
-    if err := row.Scan(&offer.ID, &offer.ID_owner, &offer.Name, &offer.Description); err != nil {
+    if err := row.Scan(&offer.ID, &offer.OwnerID, &offer.Name, &offer.Description); err != nil {
         return nil, err
     }
     return offer, nil
