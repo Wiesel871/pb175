@@ -84,14 +84,12 @@ func Mote(st ut.GSP, mote func(int64) error) ut.Response {
 
         client, err := st.DBH.GetUserById(id)
         if err != nil || !client.IsAdmin {
-            println(1);
             w.WriteHeader(http.StatusForbidden)
             comp.Page(comp.Forbidden(), client, comp.All).Render(r.Context(), w)
         }
         
         target_id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-        if err != nil {
-            println(2);
+        if err != nil || target_id == 0 || target_id == id {
             w.WriteHeader(http.StatusForbidden)
             comp.Page(comp.Forbidden(), client, comp.All).Render(r.Context(), w)
         }
@@ -104,7 +102,6 @@ func Mote(st ut.GSP, mote func(int64) error) ut.Response {
 
         target, err := st.DBH.GetUserById(target_id)
         if err != nil {
-            println(4);
             w.WriteHeader(http.StatusForbidden)
             comp.Page(comp.Forbidden(), client, comp.All).Render(r.Context(), w)
         }
