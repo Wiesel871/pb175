@@ -142,7 +142,9 @@ templ Offer(offer *data.Offer, owner, client *data.User, err string) {
             @ChangeOffer(offer, err)
         }
         </div>
-        <div/>
+        <div>
+        @User(owner, false)
+        </div>
     </div>
 }
 

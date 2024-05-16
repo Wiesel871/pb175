@@ -102,32 +102,56 @@ templ PromDem(user *data.User) {
 
 }
 
-templ Users(users data.Users, client *data.User) {
-    for _, user := range users {
+templ User(user *data.User, show_options bool) {
         <div class="grid">
-            <div 
-            class="content"
-            onmouseover="this.style.borderColor='black';" 
-            onmouseout="this.style.borderColor='transparent';"
-            hx-trigger="click" 
+        <div class="content"
+            onmouseover="this.style.borderColor='white';" 
+            onmouseout="this.style.borderColor='transparent';">
+            <div class="grid">
+            <div
+            style="cursor: grab;"
+            hx-get={"/profile/" + strconv.FormatInt(user.ID, 10)} 
             hx-replace-url="true"
             hx-push-url="true"
-            hx-get={"/profile/" + strconv.FormatInt(user.ID, 10)} 
+            hx-trigger="click" 
             hx-target="#bod" >
-            ID: <span>{ strconv.FormatInt(user.ID, 10) }</span>
-            Name: <span>{ user.Name }</span>
-            Email: <span>{ user.Email }</span>
+            if !user.HasPFP {
+                <img src="/images/base_pfp.jpeg" style="object-fit: scale-down;"></img>
+            } else {
+                <img 
+                    src={ 
+                        "/images/" + strconv.FormatInt(user.ID, 10) + 
+                            "/pfp.jpeg?" + strconv.Itoa(rand.Int()) } 
+                style="object-fit: scale-down;"></img>
+            }
             </div>
-            <div class="grid">
-                <div>
-                <button hx-target="#bod" hx-delete={"/profile/" + strconv.FormatInt(user.ID, 10)}>🗑</button>
-                </div>
-                <div id={ "butts" + strconv.FormatInt(user.ID, 10)}>
-                @PromDem(&user)
-                </div>
+
+            <div class="container">
+            <span><h3>{ user.Name }</h3></span>
+            <span> 
+            if show_options {
+                <div class="grid">
+                    <div>
+                    <button hx-target="#bod" hx-delete={"/profile/" + strconv.FormatInt(user.ID, 10)}>🗑</button>
+                    </div>
+
+                    <div id={ "butts" + strconv.FormatInt(user.ID, 10)}>
+                    @PromDem(user)
+                    </div>
+
+                    </div>
+            }
+
+            </span>
             </div>
-            <div/>
         </div>
-        <br/>
+            </div>
+        </div>
+
+}
+
+templ Users(users data.Users, client *data.User) {
+    for _, user := range users {
+        @User(&user, true)
     }
 }
