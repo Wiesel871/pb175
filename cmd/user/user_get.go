@@ -24,13 +24,13 @@ func Profile(st ut.GSP) ut.Response {
         id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 
         if err != nil {
-            w.WriteHeader(404)
+            w.WriteHeader(http.StatusNotFound)
             comp.Page(comp.NotFound(), client, comp.All).Render(r.Context(), w)
             return
         }
         owner, err := st.DBH.GetUserById(id)
         if err != nil {
-            w.WriteHeader(404)
+            w.WriteHeader(http.StatusNotFound)
             comp.Page(comp.NotFound(), client, comp.All).Render(r.Context(), w)
             return
         }
@@ -56,14 +56,11 @@ func GetAllUsers(st ut.GSP) ut.Response {
         client := ut.GetUser(st, user)
 
         if !client.IsAdmin {
-            w.WriteHeader(403)
+            w.WriteHeader(http.StatusForbidden)
             comp.Page(comp.Forbidden(), client, comp.All).Render(r.Context(), w)
             return
         }
-        users, err := st.DBH.GetUsers()
-        if err != nil {
-
-        }
+        users, _ := st.DBH.GetUsers()
         comp.Page(comp.Users(users, client), client, comp.All).Render(r.Context(), w)
     }
 }

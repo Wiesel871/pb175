@@ -43,7 +43,11 @@ func SignUp(st ut.GSP) ut.Response {
         
 
         http.SetCookie(w, ut.NewSession(user.ID))
-        http.Redirect(w, r, "/profile/" + strconv.FormatInt(user.ID, 10), http.StatusFound)
+        http.Redirect(
+            w, 
+            r, 
+            "/profile/" + strconv.FormatInt(user.ID, 10), 
+            http.StatusFound)
     }
 }
 
@@ -68,18 +72,23 @@ func LogIn(st ut.GSP) ut.Response {
         password := r.FormValue("psw")
         user, err := st.DBH.GetUserByEmail(email)
         if err != nil {
-            w.WriteHeader(422)
+            w.WriteHeader(http.StatusUnprocessableEntity)
             comp.LogInForm("Email not found").Render(r.Context(), w)
             return
         }
         if err = db.CheckPasswordHash(password, user.Password); err != nil {
-            w.WriteHeader(422)
+            w.WriteHeader(http.StatusUnprocessableEntity)
             comp.LogInForm("Incorrect password").Render(r.Context(), w)
             return
         }
 
         http.SetCookie(w, ut.NewSession(user.ID))
-        http.Redirect(w, r, "/profile/" + strconv.FormatInt(user.ID, 10), http.StatusFound)
+
+        http.Redirect(
+            w, 
+            r, 
+            "/profile/" + strconv.FormatInt(user.ID, 10), 
+            http.StatusFound)
     }
 }
 
