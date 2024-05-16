@@ -88,5 +88,8 @@ func SetupUserHandler(mux *http.ServeMux, st *st.GlobalState) {
 
     mux.HandleFunc("DELETE /profile/{owner}/offers/{id}", of.DeleteOffer(st))
 
+    mux.HandleFunc("POST /promote/{id}", us.Mote(st, st.DBH.Promote))
+    mux.HandleFunc("POST /demote/{id}", us.Mote(st, st.DBH.Demote))
+
     mux.HandleFunc("POST /shutdown", Shutdown(st))
 }

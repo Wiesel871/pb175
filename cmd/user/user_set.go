@@ -2,14 +2,13 @@ package user
 
 import (
 	"fmt"
+	"io"
 	"net/http"
+	"os"
 	"strconv"
-    "os"
-    "io"
 
+	ut "wiesel/pb175/cmd/utility"
 	comp "wiesel/pb175/components"
-    ut "wiesel/pb175/cmd/utility"
-
 
 	_ "github.com/a-h/templ"
 )
@@ -21,7 +20,7 @@ func ChangeDetails(st ut.GSP) ut.Response {
 
         client, err := st.DBH.GetUserById(id)
         if err != nil {
-            w.WriteHeader(403)
+            w.WriteHeader(http.StatusForbidden)
             comp.Page(comp.Forbidden(), client, comp.All).Render(r.Context(), w)
         }
         name := r.FormValue("name")
@@ -61,7 +60,7 @@ func ChangeDetails(st ut.GSP) ut.Response {
 
             _, err = io.Copy(f, file)
             if err != nil {
-                w.WriteHeader(400)
+                w.WriteHeader(http.StatusNotFound)
                 comp.Profile(client, client, err.Error()).Render(r.Context(), w)
                 return
             }
@@ -71,10 +70,45 @@ func ChangeDetails(st ut.GSP) ut.Response {
 
         client.HasPFP = hasPfp
         if err = st.DBH.AdjustUser(client, name, email, details, hasPfp); err != nil {
-            w.WriteHeader(400)
+            w.WriteHeader(http.StatusNotFound)
             fmt.Printf("err: %v\n", err)
         }
 
         http.Redirect(w, r, "/profile/" + strconv.FormatInt(id, 10), http.StatusFound)
+    }
+}
+
+func Mote(st ut.GSP, mote func(int64) error) ut.Response {
+    return func(w http.ResponseWriter, r *http.Request) {
+        id := ut.GetClientID(r)
+
+        client, err := st.DBH.GetUserById(id)
+        if err != nil || !client.IsAdmin {
+            println(1);
+            w.WriteHeader(http.StatusForbidden)
+            comp.Page(comp.Forbidden(), client, comp.All).Render(r.Context(), w)
+        }
+        
+        target_id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+        if err != nil {
+            println(2);
+            w.WriteHeader(http.StatusForbidden)
+            comp.Page(comp.Forbidden(), client, comp.All).Render(r.Context(), w)
+        }
+        err = mote(target_id)
+        if err != nil {
+            fmt.Printf("err %v\n", err.Error())
+            w.WriteHeader(http.StatusForbidden)
+            comp.Page(comp.Forbidden(), client, comp.All).Render(r.Context(), w)
+        }
+
+        target, err := st.DBH.GetUserById(target_id)
+        if err != nil {
+            println(4);
+            w.WriteHeader(http.StatusForbidden)
+            comp.Page(comp.Forbidden(), client, comp.All).Render(r.Context(), w)
+        }
+
+        comp.PromDem(target).Render(r.Context(), w)
     }
 }

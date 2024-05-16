@@ -93,6 +93,15 @@ templ Profile(target *data.User, client *data.User, err string) {
     </div>
 }
 
+templ PromDem(user *data.User) {
+    if user.IsAdmin {
+        <button hx-target={"#butts" + strconv.FormatInt(user.ID, 10)} hx-post={"/demote/" + strconv.FormatInt(user.ID, 10)}>Degraduj</button>
+    } else {
+        <button hx-target={"#butts" + strconv.FormatInt(user.ID, 10)} hx-post={"/promote/" + strconv.FormatInt(user.ID, 10)}>Povis</button>
+    }
+
+}
+
 templ Users(users data.Users, client *data.User) {
     for _, user := range users {
         <div class="grid">
@@ -109,8 +118,13 @@ templ Users(users data.Users, client *data.User) {
             Name: <span>{ user.Name }</span>
             Email: <span>{ user.Email }</span>
             </div>
-            <div>
+            <div class="grid">
+                <div>
                 <button hx-target="#bod" hx-delete={"/profile/" + strconv.FormatInt(user.ID, 10)}>🗑</button>
+                </div>
+                <div id={ "butts" + strconv.FormatInt(user.ID, 10)}>
+                @PromDem(&user)
+                </div>
             </div>
             <div/>
         </div>

@@ -98,8 +98,26 @@ func (dbh *DBHandler) AdjustUser(u *User, name, email, details string, hasPFP bo
     _, err := dbh.DB.Exec(`
     UPDATE ` + dbh.Users + ` 
     SET Name = ?, Email = ?, Password = ?, Details = ?, HasPFP = ?
-    WHERE ID = ?;`, 
+    WHERE ID = ?`, 
     name, u.Email, u.Password, details, hasPFP, u.ID)
+    return err
+}
+
+func (dbh *DBHandler) Promote(id int64) error {
+    _, err := dbh.DB.Exec(`
+    UPDATE ` + dbh.Users + ` 
+    SET IsAdmin = True
+    WHERE ID = ?`, 
+    id)
+    return err
+}
+
+func (dbh *DBHandler) Demote(id int64) error {
+    _, err := dbh.DB.Exec(`
+    UPDATE ` + dbh.Users + ` 
+    SET IsAdmin = False
+    WHERE ID = ?`, 
+    id)
     return err
 }
 
