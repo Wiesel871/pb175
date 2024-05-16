@@ -22,6 +22,7 @@ func ChangeDetails(st ut.GSP) ut.Response {
         if err != nil {
             w.WriteHeader(http.StatusForbidden)
             comp.Page(comp.Forbidden(), client, comp.All).Render(r.Context(), w)
+            return
         }
         name := r.FormValue("name")
         email := r.FormValue("email")
@@ -72,6 +73,7 @@ func ChangeDetails(st ut.GSP) ut.Response {
         if err = st.DBH.AdjustUser(client, name, email, details, hasPfp); err != nil {
             w.WriteHeader(http.StatusNotFound)
             fmt.Printf("err: %v\n", err)
+            return
         }
 
         http.Redirect(w, r, "/profile/" + strconv.FormatInt(id, 10), http.StatusFound)
@@ -86,24 +88,28 @@ func Mote(st ut.GSP, mote func(int64) error) ut.Response {
         if err != nil || !client.IsAdmin {
             w.WriteHeader(http.StatusForbidden)
             comp.Page(comp.Forbidden(), client, comp.All).Render(r.Context(), w)
+            return
         }
         
         target_id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
         if err != nil || target_id == 0 || target_id == id {
             w.WriteHeader(http.StatusForbidden)
             comp.Page(comp.Forbidden(), client, comp.All).Render(r.Context(), w)
+            return
         }
         err = mote(target_id)
         if err != nil {
             fmt.Printf("err %v\n", err.Error())
             w.WriteHeader(http.StatusForbidden)
             comp.Page(comp.Forbidden(), client, comp.All).Render(r.Context(), w)
+            return
         }
 
         target, err := st.DBH.GetUserById(target_id)
         if err != nil {
             w.WriteHeader(http.StatusForbidden)
             comp.Page(comp.Forbidden(), client, comp.All).Render(r.Context(), w)
+            return
         }
 
         comp.PromDem(target).Render(r.Context(), w)
