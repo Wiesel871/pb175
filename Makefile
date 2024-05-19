@@ -2,7 +2,7 @@
 
 all: $(SOURCES)
 	templ generate
-	go build -o ./install/bazos.in
+	go build -o ./install/bazos
 
 clean:
-	rm tmp/bazos.in
+	rm install/bazos

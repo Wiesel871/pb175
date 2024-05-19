@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+    "bufio"
 
 	cmd "wiesel/pb175/cmd"
 	_ "wiesel/pb175/components"
@@ -39,8 +40,20 @@ func main() {
     }
 
 
+    file, err := os.Open("admin.txt")
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return
+	}
+	defer file.Close()
+
+	scanner := bufio.NewReader(file)
+    name, _, _ := scanner.ReadLine()
+    email, _, _ := scanner.ReadLine()
+    password, _, _ := scanner.ReadLine()
+
     id := int64(0)
-    admin, _ := data.NewUser(id, "@name@", "@email@", "@password@")
+    admin, _ := data.NewUser(id, string(name), string(email), string(password))
     admin.IsAdmin = true
     st.DBH.InsertUser(admin)
     go func() {

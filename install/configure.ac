@@ -19,7 +19,7 @@ AC_ARG_WITH([prefix],
             [prefix="."])
 AC_SUBST([PREFIX])
 
-AC_CONFIG_FILES([bazos], [chmod +x bazos])
+AC_CONFIG_FILES([admin.txt])
 AC_CONFIG_FILES([Makefile])
 
 AC_OUTPUT

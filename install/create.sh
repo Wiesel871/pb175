@@ -1,4 +1,6 @@
 #!/bin/sh
 
-./autogen.sh $@
-zip install.zip Makefile bazos base_pfp.png
+cd ..
+make
+cd install
+zip install.zip Makefile.am bazos admin.txt.in base_pfp.png configure.ac NEWS README AUTHORS ChangeLog autogen.sh
