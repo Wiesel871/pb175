@@ -54,8 +54,8 @@ func main() {
 
     id := int64(0)
     admin, _ := data.NewUser(id, string(name), string(email), string(password))
-    admin.IsAdmin = true
     st.DBH.InsertUser(admin)
+    st.DBH.Promote(id)
     go func() {
         sigChan := make(chan os.Signal, 1)
         signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)

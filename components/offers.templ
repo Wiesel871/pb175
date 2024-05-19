@@ -55,7 +55,26 @@ templ RangeOffers(offers *data.Offers, client, owner *data.User, salt string) {
 templ SortsAndOffers(offers *data.Offers, owner, client *data.User, by, sc, filter, salt string) {
     <div class="grid">
         <details class="dropdown">
-        <summary>Zorad podla</summary>
+        if by == "ID" {
+            if sc == "ASC" {
+                <summary>Datum pridania ↑</summary>
+            } else {
+                <summary>Datum pridania ↓</summary>
+            }
+        } else if by == "OwnerID" {
+            if sc == "ASC" {
+                <summary>Autor ↑</summary>
+            } else {
+                <summary>Autor ↓</summary>
+            }
+
+        } else {
+            if sc == "ASC" {
+                <summary>Nazov ↑</summary>
+            } else {
+                <summary>Nazov ↓</summary>
+            }
+        }
         <ul>
         <li><a class="link" hx-get={"/offers/ID/ASC/" + filter} hx-target="#bod">Datum pridania ↑</a></li>
         <li><a class="link" hx-get={"/offers/ID/DESC/" + filter} hx-target="#bod">Datum pridania ↓</a></li>
@@ -91,11 +110,12 @@ templ Offers(offers *data.Offers, owner, client *data.User, by, sc, filter strin
         if client.ID != -1 && owner.ID == client.ID && len(*offers) < 10 {
         <div class="container">
             <button 
+            style="margin-left: 3%;"
             hx-get="/add_offer" 
             hx-replace-url="true"
             hx-push-url="true"
             hx-target="#bod" >
-            Add offer
+            Pridaj
             </button>
         </div>
         }

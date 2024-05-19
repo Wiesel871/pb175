@@ -28,7 +28,7 @@ func NewOffer(id, id_owner int64, name, desc string) (*Offer) {
 
 func (dbh *DBHandler) InsertOffer(of *Offer) error {
     _, err := dbh.DB.Exec(`
-    INSERT INTO Offers (ID, ID_owner, Name, Description) 
+    INSERT INTO Offers (ID, OwnerID, Name, Description) 
     VALUES (?, ?, ?, ?)`, 
     of.ID, of.OwnerID, of.Name, of.Description)
     return err
@@ -52,7 +52,7 @@ func (dbh *DBHandler) GetOffers(by, sc, fil string) (Offers, error) {
 }
 
 func (dbh *DBHandler) GetOffersByOwner(id int64) (Offers, error) {
-    rows, err := dbh.DB.Query("SELECT * FROM " + dbh.Offers + " WHERE ID_owner = ?", id)
+    rows, err := dbh.DB.Query("SELECT * FROM " + dbh.Offers + " WHERE OwnerID = ?", id)
     if err != nil {
         fmt.Printf("get err.Error(): %v\n", err.Error())
         return nil, err
@@ -100,17 +100,17 @@ func initOffers(db *sql.DB) (string, error) {
     _, err := db.Exec(`
         CREATE TABLE IF NOT EXISTS ` + name + ` (
             ID INTEGER PRIMARY KEY,
-            ID_owner INTEGER,
+            OwnerID INTEGER,
             Name TEXT NOT NULL,
             Description TEXT,
-            FOREIGN KEY (ID_owner) REFERENCES Users(ID)
+            FOREIGN KEY (OwnerID) REFERENCES Users(ID)
         )`) 
     _, _ = db.Exec(`
-    INSERT INTO ` + name + ` (ID, ID_owner, Name, Description) 
+    INSERT INTO ` + name + ` (ID, OwnerID, Name, Description) 
     VALUES (0, 0, "test1", "idk")`)
     
     _, _ = db.Exec(`
-    INSERT INTO ` + name + ` (ID, ID_owner, Name, Description) 
+    INSERT INTO ` + name + ` (ID, OwnerID, Name, Description) 
     VALUES (1, 0, "test2", "idk")`)
 
     return name, err

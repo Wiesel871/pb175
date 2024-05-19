@@ -10,13 +10,13 @@ templ SignUpForm(err string) {
     <div class="container">
     <form hx-target="#bod" hx-post="/signup">
         <label for="name">Name</label>
-        <input type="text" name="name" placeholder="Name" required></input>
+        <input type="text" name="name" placeholder="Meno" required></input>
 
         <label for="email">Email</label>
         <input type="email" name="email" placeholder="Email" required></input>
 
         <label for="psw">Password</label>
-        <input type="password" name="psw" placeholder="Password" required></input>
+        <input type="password" name="psw" placeholder="Heslo" required></input>
         <button type="submit">Submit</button>
         <div>{ err }</div>
     </form>
@@ -34,7 +34,7 @@ templ LogInForm(err string) {
         <input type="email" name="email" placeholder="Email" aria-label="Email" autocomplete="email" required></input>
 
         <label for="psw">Password</label>
-        <input type="password" name="psw" placeholder="Password" required></input>
+        <input type="password" name="psw" placeholder="Heslo" required></input>
         <button type="submit">Submit</button>
         <div>{ err }</div>
     </form>
