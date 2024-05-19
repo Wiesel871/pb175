@@ -1,10 +1,13 @@
 #!/bin/sh
 
 set -e
-
+cd ..
+make
+cd install
+aclocal
 automake --add-missing -c
-autoreconf -i
+autoreconf -fi
 
-./configure
+./configure "$@"
 
 set +e
