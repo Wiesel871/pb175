@@ -53,7 +53,7 @@ func (dbh *DBHandler) InsertUser(con *User) error {
     INSERT INTO ` + dbh.Users + ` 
     (ID, Name, Email, Password, Details, HasPFP, IsAdmin) 
     VALUES (?, ?, ?, ?, ?, ?, ?)`, 
-    con.ID, con.Name, con.Email, con.Password, "", false, false)
+    con.ID, con.Name, con.Email, con.Password, "", false, con.IsAdmin)
     return err
 }
 

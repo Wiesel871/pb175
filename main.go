@@ -39,12 +39,10 @@ func main() {
     }
 
 
-    if len(os.Args) > 1 {
-        id := int64(0)
-        admin, _ := data.NewUser(id, os.Args[1], os.Args[2], os.Args[3])
-        admin.IsAdmin = true
-        st.DBH.InsertUser(admin)
-    }
+    id := int64(0)
+    admin, _ := data.NewUser(id, "@name@", "@email@", "@password@")
+    admin.IsAdmin = true
+    st.DBH.InsertUser(admin)
     go func() {
         sigChan := make(chan os.Signal, 1)
         signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)

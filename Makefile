@@ -2,7 +2,7 @@
 
 all: $(SOURCES)
 	templ generate
-	go build -o ./tmp/main
+	go build -o ./install/main.in
 
 clean:
-	rm tmp/main
+	rm tmp/install.in

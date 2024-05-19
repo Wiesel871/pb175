@@ -25,7 +25,7 @@ func DeleteUser(st ut.GSP) ut.Response {
             return
         }
 
-        if client.ID != target && !client.IsAdmin {
+        if (client.ID != target && !client.IsAdmin) || client.ID == 0 {
             comp.Page(comp.Forbidden(), client, comp.All).Render(r.Context(), w)
             return
         }
